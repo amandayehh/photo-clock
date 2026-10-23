@@ -22,4 +22,4 @@
 .card-back>span{flex-shrink:0}
 .card.held .card-back{pointer-events:auto}
 
-.card-front .card-title{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;white-space:normal;overflow-wrap:anywhere;overflow:hidden}
+.card-front .card-title{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
