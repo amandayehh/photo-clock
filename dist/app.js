@@ -1,10 +1,11 @@
 import {bindCardInteraction,releaseHeldCard} from './interaction.js';
-import {nyTime,displayTime,buildIndex,findMoment,rankCandidates,priorDate} from './core.js';
+import {nyTime,displayTime,buildIndex,findMoment,createCandidateSelector,priorDate} from './core.js';
 import {cleanTitle,stackLayout,imageDimensions,landingPose,entranceFrames,entranceTiming,settledTransform} from './stack.js';
 const $=id=>document.getElementById(id);
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
 let index=new Map(),photos=[],cards=[],current=null,activeKey='',busy=false,generation=0,retryAt=0,lastClock='';
 const failed=new Set();
+const chooseCandidates=createCandidateSelector();
 let stackOrder=0;
 function viewport(){return {width:window.innerWidth,height:window.innerHeight};}
 function updateClock(){const state=nyTime(),t=displayTime(state.minute),text=`${t.clock} ${t.period}`;if(lastClock!==text){$('clock').textContent=text;$('clock').setAttribute('aria-label',`${text}, New York time`);lastClock=text;}return state;}
@@ -66,7 +67,7 @@ function printPhoto(photo,img){
   if(!reducedMotion.matches)animateCard(entry);
 }
 function loadImage(url){return new Promise((resolve,reject)=>{const img=new Image();const timeout=setTimeout(()=>{img.onload=img.onerror=null;reject(new Error('Image timeout'));},10000);img.onload=()=>{clearTimeout(timeout);resolve(img);};img.onerror=()=>{clearTimeout(timeout);reject(new Error('Image unavailable'));};img.referrerPolicy='no-referrer';img.src=url;});}
-function alternatives(moment){let choices=rankCandidates(moment.photos,moment.date,moment.minute),cursor=moment.minute-1,day=moment.date;const seen=new Set(choices.map(p=>p.pageid));while(choices.length<8){if(cursor<0){day=priorDate(day);cursor=1439;}const previous=findMoment(index,cursor,day);if(!previous)break;const add=rankCandidates(previous.photos,previous.date,previous.minute).filter(p=>!seen.has(p.pageid));if(!add.length)break;choices.push(...add);add.forEach(p=>seen.add(p.pageid));cursor=previous.minute-1;day=previous.date;}return choices;}
+function alternatives(moment){let choices=chooseCandidates(moment.photos,moment.date,moment.minute),cursor=moment.minute-1,day=moment.date;const seen=new Set(choices.map(p=>p.pageid));while(choices.length<8){if(cursor<0){day=priorDate(day);cursor=1439;}const previous=findMoment(index,cursor,day);if(!previous)break;const add=chooseCandidates(previous.photos,previous.date,previous.minute).filter(p=>!seen.has(p.pageid));if(!add.length)break;choices.push(...add);add.forEach(p=>seen.add(p.pageid));cursor=previous.minute-1;day=previous.date;}return choices;}
 async function refresh(force=false){if(!index.size||busy&&!force)return;const state=updateClock(),moment=findMoment(index,state.minute,state.date);if(!moment)return;const key=`${moment.date}|${moment.minute}`;if(!force&&key===activeKey)return;activeKey=key;const token=++generation;busy=true;let attempts=0;
   for(const photo of alternatives(moment)){if(token!==generation)return;if(failed.has(photo.pageid))continue;if(++attempts>5)break;
     // A missed minute or retry never prints the already visible card again.

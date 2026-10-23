@@ -6,7 +6,7 @@ BcIVNvRTYHZrEXbR4rCSC0, node 1:24, with live Wikimedia-derived collection imager
 ## Run and verify
 
 - `npm run dev` serves `dist/` on http://127.0.0.1:8780/.
-- `npm test` checks New York time, midnight and DST behavior, daily selection,
+- `npm test` checks New York time, midnight and DST behavior, random selection,
   all 1,440 fallback minutes, title cleanup, equal-area sizing and entrance frames.
 
 ## Interface
@@ -39,7 +39,7 @@ is not yet connected. Time is always America/New_York, including daylight saving
 Most capture timestamps are assumed local; this is disclosed in photo details.
 
 Missing minutes hold the previous image. Initial visits look backward across
-midnight when needed. Deterministic daily selection first groups photographers,
+midnight when needed. Deterministic random selection first groups photographers,
 then photographic sequences, to avoid letting bursts dominate selection. Failed
 images try alternatives and earlier moments without removing the existing stack.
 An unchanged held photo is not reprinted. Failed loads are retried after a minute.
