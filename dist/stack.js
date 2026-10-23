@@ -42,15 +42,12 @@ export function springProgress(seconds){
 export function entranceFrames(pose,viewportHeight,cardHeight){
   // Begin centered and level, fully above the viewport, including the shadow.
   const p0={x:0,y:-(viewportHeight+cardHeight)/2-80};
-  const p1={x:0,y:p0.y+(pose.y-p0.y)*.35};
-  const p2={x:pose.x+35,y:pose.y-60};
-  const p3={x:pose.x,y:pose.y};
   const steps=Math.ceil(duration/1000*120);
   return Array.from({length:steps+1},(_,i)=>{
     const offset=i/steps;
-    const t=i===steps?1:springProgress(offset*springDuration/1000),u=1-t;
-    const x=u*u*u*p0.x+3*u*u*t*p1.x+3*u*t*t*p2.x+t*t*t*p3.x;
-    const y=u*u*u*p0.y+3*u*u*t*p1.y+3*u*t*t*p2.y+t*t*t*p3.y;
+    const t=i===steps?1:springProgress(offset*springDuration/1000);
+    const x=p0.x+(pose.x-p0.x)*t;
+    const y=p0.y+(pose.y-p0.y)*t;
     const angle=pose.angle*t;
     return {offset,transform:`translate(-50%, -50%) translate(${x}px, ${y}px) rotate(${angle}deg)`,opacity:1};
   });

@@ -61,3 +61,12 @@ test('the entire card and shadow begin outside the viewport for every card heigh
     assert.equal(entranceTiming.fill,'backwards');
   }
 });
+
+test('entrance follows a straight path from its offscreen start to the landing point',()=>{
+  const pose={x:12,y:4,angle:2},startY=-(800+400)/2-80;
+  for(const frame of entranceFrames(pose,800,400)){
+    const match=frame.transform.match(/translate\((-?[\d.e+]+)px, (-?[\d.e+]+)px\)/);
+    const x=Number(match[1]),y=Number(match[2]);
+    assert.ok(Math.abs(x*(pose.y-startY)-(y-startY)*pose.x)<1e-6);
+  }
+});
