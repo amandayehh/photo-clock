@@ -22,13 +22,13 @@ test('reference area is a square with half the shorter viewport dimension',()=>{
   const layout=stackLayout(1722,1088,[.527,1,1.5,3.612]);
   assert.equal(layout.area,544**2);
 });
-test('entrance begins above the screen, remains opaque, and lands at its final pose',()=>{
+test('entrance begins level at top center, remains opaque, and lands at its final pose',()=>{
   const pose=landingPose(12,1,544),frames=entranceFrames(pose,544,330);
   assert.equal(frames.length,41);
   assert.ok(frames.every(f=>f.opacity===1));
   assert.equal(frames[0].offset,0);assert.equal(frames.at(-1).offset,1);
   assert.equal(frames.at(-1).transform,settledTransform(pose));
-  assert.ok(frames[0].transform.includes('-682px'));
+  assert.equal(frames[0].transform,'translate(-50%, -50%) translate(0px, -107px) rotate(0deg)');
   assert.ok(frames[20].transform!==frames[0].transform);
 });
 test('successive cards have small alternating final rotations',()=>{

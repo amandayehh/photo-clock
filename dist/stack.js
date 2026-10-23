@@ -27,15 +27,16 @@ export function landingPose(id,sequence,short){
   return {x:((seed%13)-6)*scale,y:((Math.floor(seed/13)%9)-4)*scale,angle:(sequence%2===0?1:-1)*(1.4+(seed%15)/10)};
 }
 export function entranceFrames(pose,viewportHeight,cardHeight){
-  const p0={x:pose.x-65,y:-viewportHeight/2-cardHeight-80};
-  const p1={x:pose.x-105,y:-viewportHeight*.29};
+  // Begin level and horizontally centered, with the card’s top at the window edge.
+  const p0={x:0,y:(cardHeight-viewportHeight)/2};
+  const p1={x:0,y:p0.y+(pose.y-p0.y)*.35};
   const p2={x:pose.x+35,y:pose.y-60};
   const p3={x:pose.x,y:pose.y};
   return Array.from({length:41},(_,i)=>{
     const t=i/40,u=1-t;
     const x=u*u*u*p0.x+3*u*u*t*p1.x+3*u*t*t*p2.x+t*t*t*p3.x;
     const y=u*u*u*p0.y+3*u*u*t*p1.y+3*u*t*t*p2.y+t*t*t*p3.y;
-    const angle=pose.angle-6*u*u;
+    const angle=pose.angle*t*t*(3-2*t);
     return {offset:t,transform:`translate(-50%, -50%) translate(${x}px, ${y}px) rotate(${angle}deg)`,opacity:1};
   });
 }
