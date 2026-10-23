@@ -46,7 +46,9 @@ function printPhoto(photo,img){
   stamp.append(captureTime,captureDate);header.append(label,stamp);front.append(header,img);
   const back=document.createElement('span');back.className='card-back';back.setAttribute('aria-hidden','true');
   const addDetail=(text,className)=>{const line=document.createElement('span');line.className=className;line.textContent=text;back.append(line);};
-  addDetail(title,'back-title');
+  const backHeader=document.createElement('span');backHeader.className='card-header';
+  const backTitle=label.cloneNode(true);backTitle.classList.add('back-title');
+  backHeader.append(backTitle);back.append(backHeader);
   addDetail([photo.attribution||photo.artist,photo.credit&&photo.credit!=='Own work'&&photo.credit!==photo.artist?photo.credit:''].filter(Boolean).join(' · '),'back-author');
   addDetail(`${time.clock} ${time.period} · ${photo.capture_date}`,'back-date');
   addDetail(photo.license,'back-license');
