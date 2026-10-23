@@ -1,16 +1,18 @@
 let activeRelease=null;
 export function releaseHeldCard(){activeRelease?.();}
 
-export function bindCardInteraction(card,{onLift,onMove,onFlip,onDetails}){
+export function bindCardInteraction(card,{onLift,onMove,onFlip,onDetails,onDrag=()=>{},onRelease=()=>{}}){
   let pointer=null,holdingSpace=false,flipTimer=null;
   function cancelFlip(){clearTimeout(flipTimer);flipTimer=null;}
-  function release(){
+  function release(cancelled=true){
     cancelFlip();
+    const gesture=pointer;
     const id=pointer?.id;
     pointer=null;holdingSpace=false;
     onFlip(false);
     if(activeRelease===release)activeRelease=null;
     if(id!==undefined&&card.hasPointerCapture(id))card.releasePointerCapture(id);
+    if(gesture)onRelease({...gesture,cancelled});
   }
   function lift(flipImmediately=true){releaseHeldCard();activeRelease=release;onLift();if(flipImmediately)onFlip(true);}
   function move(event){
@@ -21,6 +23,7 @@ export function bindCardInteraction(card,{onLift,onMove,onFlip,onDetails}){
     }
     onMove(event.clientX-pointer.x,event.clientY-pointer.y);
     pointer.x=event.clientX;pointer.y=event.clientY;
+    if(pointer.dragging)onDrag({x:pointer.x,y:pointer.y});
   }
   card.addEventListener('pointerdown',event=>{
     if(event.button!==0||event.isPrimary===false)return;
@@ -34,7 +37,7 @@ export function bindCardInteraction(card,{onLift,onMove,onFlip,onDetails}){
   card.addEventListener('pointermove',move);
   card.addEventListener('pointerup',event=>{
     if(event.pointerId!==pointer?.id)return;
-    move(event);release();
+    move(event);release(false);
   });
   for(const type of ['pointercancel','lostpointercapture'])card.addEventListener(type,event=>{
     if(event.pointerId===pointer?.id)release();

@@ -10,9 +10,9 @@ class Card extends EventTarget{
   focus(){}
   send(type,props={}){const event=new Event(type,{cancelable:true});Object.assign(event,props);this.dispatchEvent(event);return event;}
 }
-function setup(){
+function setup(callbacks={}){
   const card=new Card(),state={held:false,x:0,y:0,lifts:0,details:0};
-  bindCardInteraction(card,{onLift:()=>state.lifts++,onMove:(x,y)=>{state.x+=x;state.y+=y;},onFlip:held=>state.held=held,onDetails:()=>state.details++});
+  bindCardInteraction(card,{onLift:()=>state.lifts++,onMove:(x,y)=>{state.x+=x;state.y+=y;},onFlip:held=>state.held=held,onDetails:()=>state.details++,...callbacks});
   return {card,state};
 }
 const down={button:0,isPrimary:true,pointerId:1,clientX:100,clientY:100};
@@ -80,4 +80,33 @@ test('dragging an already flipped card keeps its back visible until mouse up',t=
   assert.equal(state.held,true);
   card.send('pointerup',{pointerId:1,clientX:200,clientY:240});
   assert.deepEqual([state.x,state.y,state.held],[100,140,false]);
+});
+
+test('drag feedback starts past the threshold and release reports final coordinates once',()=>{
+  const moves=[],releases=[];
+  const {card}=setup({onDrag:p=>moves.push(p),onRelease:p=>releases.push(p)});
+  card.send('pointerdown',down);
+  card.send('pointermove',{pointerId:1,clientX:103,clientY:100});
+  assert.equal(moves.length,0);
+  card.send('pointermove',{pointerId:1,clientX:300,clientY:150});
+  assert.deepEqual(moves.at(-1),{x:300,y:150});
+  assert.equal(releases.length,0);
+  card.send('pointerup',{pointerId:1,clientX:950,clientY:180});
+  card.send('lostpointercapture',{pointerId:1});
+  card.send('blur');
+  assert.equal(releases.length,1);
+  assert.deepEqual([releases[0].x,releases[0].y,releases[0].dragging,releases[0].cancelled],[950,180,true,false]);
+});
+
+test('cancelled drags report cancellation and allow the card to return without a drop',()=>{
+  for(const type of ['pointercancel','lostpointercapture','blur','window-blur']){
+    const releases=[];
+    const {card,state}=setup({onRelease:p=>{releases.push(p);state.x=0;state.y=0;}});
+    card.send('pointerdown',down);
+    card.send('pointermove',{pointerId:1,clientX:950,clientY:180});
+    if(type==='window-blur')releaseHeldCard();else card.send(type,{pointerId:1});
+    assert.equal(releases.length,1);
+    assert.ok(releases[0].cancelled);
+    assert.deepEqual([state.x,state.y,state.held],[0,0,false]);
+  }
 });

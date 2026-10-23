@@ -1,9 +1,11 @@
 import {applySmoothing} from './smoothing.js';
 import {bindCardInteraction,releaseHeldCard} from './interaction.js';
+import {createLinkDropTarget} from './drag-target.js';
 import {nyTime,displayTime,displayCaptureDate,photoMetadataRows,buildIndex,findMoment,createCandidateSelector,priorDate} from './core.js';
 import {cleanTitle,stackLayout,imageDimensions,landingPose,entranceFrames,entranceTiming,settledTransform} from './stack.js';
 const $=id=>document.getElementById(id);
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
+const linkDropTarget=createLinkDropTarget($('link-drop-target'),url=>window.open(url,'_blank','noopener,noreferrer'));
 let index=new Map(),photos=[],cards=[],current=null,activeKey='',busy=false,generation=0,retryAt=0,lastClock='';
 const failed=new Set();
 const chooseCandidates=createCandidateSelector();
@@ -28,11 +30,25 @@ function animateCard(entry){
   entry.animation=animation;
   animation.onfinish=()=>{if(entry.animation===animation){entry.animation=null;card.classList.remove('arriving');}};
 }
+function returnCard(entry){
+  if(!entry.position)return;
+  const from=settledTransform(entry.pose),v=viewport();
+  entry.position=null;
+  entry.pose=landingPose(entry.photo.pageid,entry.sequence,Math.min(v.width,v.height));
+  const to=settledTransform(entry.pose);
+  entry.animation?.cancel();entry.animation=null;
+  entry.element.style.transform=to;
+  if(!reducedMotion.matches){
+    const animation=entry.element.animate([{transform:from},{transform:to}],{duration:450,easing:entranceTiming.easing});
+    entry.animation=animation;
+    animation.onfinish=()=>{if(entry.animation===animation)entry.animation=null;};
+  }
+}
 function printPhoto(photo,img){
   if(current?.pageid===photo.pageid)return;
   const card=document.createElement('button');card.type='button';card.className='card';
   const title=cleanTitle(photo.title);
-  card.setAttribute('aria-label',`${title}. Hold still for 0.6 seconds to flip; drag to move. Keyboard: hold Space for details, arrow keys to move, Enter for full credits.`);
+  card.setAttribute('aria-label',`${title}. Hold still for 0.6 seconds to flip. Drag to the right edge and release to open Wikimedia in a new tab; release elsewhere to return. Keyboard: hold Space for details, arrow keys to move, Enter for full credits and source link.`);
   card.setAttribute('aria-pressed','false');
   const flipper=document.createElement('span');flipper.className='card-flipper';
   const front=document.createElement('span');front.className='card-front';
@@ -64,10 +80,12 @@ function printPhoto(photo,img){
     onLift:()=>{entry.animation?.cancel();entry.animation=null;card.classList.remove('arriving');},
     onMove:(dx,dy)=>{
       const v=viewport();
-      // Keep the card's center within the window so a dropped card stays reachable.
+      // Keep the card's center within the window while dragging.
       entry.position={...entry.pose,x:Math.max(-v.width/2+32,Math.min(v.width/2-32,entry.pose.x+dx)),y:Math.max(-v.height/2+32,Math.min(v.height/2-32,entry.pose.y+dy))};
       entry.pose=entry.position;card.style.transform=settledTransform(entry.pose);
     },
+    onDrag:point=>linkDropTarget.show(point),
+    onRelease:gesture=>{returnCard(entry);linkDropTarget.release(photo.source_url,gesture);},
     onFlip:held=>{entry.flipped=held;updateCardLayers();card.classList.toggle('held',held);card.setAttribute('aria-pressed',String(held));front.setAttribute('aria-hidden',String(held));back.setAttribute('aria-hidden',String(!held));},
     onDetails:()=>showCredits(photo)
   });
