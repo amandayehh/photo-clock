@@ -8,6 +8,7 @@
 .card{padding:0;background:transparent;box-shadow:none;display:block;perspective:1400px;touch-action:none;cursor:grab}
 .card-flipper{position:relative;display:grid;grid-template-columns:minmax(0,1fr);transform-style:preserve-3d;transition:transform 420ms cubic-bezier(.2,.7,.2,1);pointer-events:none}
 .card.held{cursor:grabbing}
+body.card-pressed,body.card-pressed *{cursor:grabbing!important}
 .card.held .card-flipper{transform:rotateY(180deg)}
 .card-front,.card-back{grid-area:1/1;min-width:0;border-radius:var(--radius);background:#fff;color:#282828;padding:var(--pad);backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:0 4px 30px rgb(0 0 0 / .4)}
 .card-front{display:flex;flex-direction:column;gap:var(--gap);transform:rotateY(0deg)}

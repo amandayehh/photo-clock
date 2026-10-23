@@ -11,8 +11,8 @@ class Card extends EventTarget{
   send(type,props={}){const event=new Event(type,{cancelable:true});Object.assign(event,props);this.dispatchEvent(event);return event;}
 }
 function setup(callbacks={}){
-  const card=new Card(),state={held:false,x:0,y:0,lifts:0,details:0};
-  bindCardInteraction(card,{onLift:()=>state.lifts++,onMove:(x,y)=>{state.x+=x;state.y+=y;},onFlip:held=>state.held=held,onDetails:()=>state.details++,...callbacks});
+  const card=new Card(),state={held:false,pressed:false,x:0,y:0,lifts:0,details:0};
+  bindCardInteraction(card,{onPress:pressed=>state.pressed=pressed,onLift:()=>state.lifts++,onMove:(x,y)=>{state.x+=x;state.y+=y;},onFlip:held=>state.held=held,onDetails:()=>state.details++,...callbacks});
   return {card,state};
 }
 const down={button:0,isPrimary:true,pointerId:1,clientX:100,clientY:100};
@@ -20,12 +20,15 @@ test('drag starts immediately and cancels the delayed flip',t=>{
   t.mock.timers.enable({apis:['setTimeout']});
   const {card,state}=setup();
   assert.equal(card.send('pointerdown',down).defaultPrevented,true);
+  assert.equal(state.pressed,true);
   assert.equal(state.held,false);assert.ok(card.hasPointerCapture(1));
   card.send('pointermove',{pointerId:1,clientX:170,clientY:200});
   t.mock.timers.tick(1500);assert.equal(state.held,false);assert.equal(state.x,70);
+  assert.equal(state.pressed,true);
   card.send('pointerup',{pointerId:1,clientX:180,clientY:210});
   assert.deepEqual([state.x,state.y,state.held],[80,110,false]);
   assert.equal(card.hasPointerCapture(1),false);
+  assert.equal(state.pressed,false);
   card.send('click',{detail:1});assert.equal(state.details,0);
 });
 test('cancellation, lost capture and window cleanup cancel pending flips',t=>{
@@ -35,6 +38,7 @@ test('cancellation, lost capture and window cleanup cancel pending flips',t=>{
     if(type==='window-blur')releaseHeldCard();else card.send(type,{pointerId:1});
     t.mock.timers.tick(1500);
     assert.equal(state.held,false);assert.equal(card.hasPointerCapture(1),false);
+    assert.equal(state.pressed,false);
   }
 });
 test('only the active pointer moves a card, and picking another card releases it',t=>{

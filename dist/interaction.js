@@ -1,7 +1,7 @@
 let activeRelease=null;
 export function releaseHeldCard(){activeRelease?.();}
 
-export function bindCardInteraction(card,{onLift,onMove,onFlip,onDetails,onDrag=()=>{},onRelease=()=>{}}){
+export function bindCardInteraction(card,{onLift,onMove,onFlip,onDetails,onDrag=()=>{},onRelease=()=>{},onPress=()=>{}}){
   let pointer=null,holdingSpace=false,flipTimer=null;
   function cancelFlip(){clearTimeout(flipTimer);flipTimer=null;}
   function release(cancelled=true){
@@ -12,7 +12,7 @@ export function bindCardInteraction(card,{onLift,onMove,onFlip,onDetails,onDrag=
     onFlip(false);
     if(activeRelease===release)activeRelease=null;
     if(id!==undefined&&card.hasPointerCapture(id))card.releasePointerCapture(id);
-    if(gesture)onRelease({...gesture,cancelled});
+    if(gesture){onPress(false);onRelease({...gesture,cancelled});}
   }
   function lift(flipImmediately=true){releaseHeldCard();activeRelease=release;onLift();if(flipImmediately)onFlip(true);}
   function move(event){
@@ -30,6 +30,7 @@ export function bindCardInteraction(card,{onLift,onMove,onFlip,onDetails,onDrag=
     event.preventDefault();
     lift(false);
     pointer={id:event.pointerId,x:event.clientX,y:event.clientY,startX:event.clientX,startY:event.clientY,dragging:false};
+    onPress(true);
     flipTimer=setTimeout(()=>{flipTimer=null;if(pointer&&!pointer.dragging)onFlip(true);},600);
     card.setPointerCapture(event.pointerId);
     card.focus({preventScroll:true});
