@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {stackLayout,imageDimensions,cleanTitle,landingPose,entranceFrames,settledTransform} from '../dist/stack.js';
+import {stackLayout,imageDimensions,cleanTitle,landingPose,entranceFrames,entranceTiming,springProgress,settledTransform} from '../dist/stack.js';
 
 test('titles omit file prefix, extension, and nested parenthetical text',()=>{
   assert.equal(cleanTitle('File:Midtown (Manhattan) (NYC (2024)).jpg'),'Midtown');
@@ -24,7 +24,7 @@ test('reference area is a square with half the shorter viewport dimension',()=>{
 });
 test('entrance begins level at top center, remains opaque, and lands at its final pose',()=>{
   const pose=landingPose(12,1,544),frames=entranceFrames(pose,544,330);
-  assert.equal(frames.length,41);
+  assert.ok(frames.length>60);
   assert.ok(frames.every(f=>f.opacity===1));
   assert.equal(frames[0].offset,0);assert.equal(frames.at(-1).offset,1);
   assert.equal(frames.at(-1).transform,settledTransform(pose));
@@ -35,4 +35,16 @@ test('successive cards have small alternating final rotations',()=>{
   const a=landingPose(12,0,544),b=landingPose(13,1,544);
   assert.ok(a.angle>0&&a.angle<=3);assert.ok(b.angle<0&&b.angle>=-3);
   assert.deepEqual(a,landingPose(12,0,544));
+});
+
+test('spring overshoots gently and settles before the animation ends',()=>{
+  assert.equal(springProgress(0),0);
+  assert.equal(entranceTiming.delay,800);
+  assert.equal(entranceTiming.easing,'linear');
+  assert.equal(entranceTiming.fill,'backwards');
+  const peak=springProgress(Math.PI/Math.sqrt(100-7.5**2));
+  assert.ok(peak>1.02&&peak<1.03);
+  assert.ok(Math.abs(springProgress(entranceTiming.duration/1000)-1)<.0001);
+  const frames=entranceFrames({x:0,y:0,angle:2},800,400);
+  assert.ok(frames.some(f=>Number(f.transform.match(/rotate\(([^d]+)deg/)[1])>2));
 });

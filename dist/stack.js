@@ -26,18 +26,30 @@ export function landingPose(id,sequence,short){
   // Alternate the tilt, giving successive white edges room to show.
   return {x:((seed%13)-6)*scale,y:((Math.floor(seed/13)%9)-4)*scale,angle:(sequence%2===0?1:-1)*(1.4+(seed%15)/10)};
 }
+// Physical spring from the supplied Figma settings, starting at rest.
+export const entranceSpring=Object.freeze({mass:1,stiffness:100,damping:15,delay:800});
+const decay=entranceSpring.damping/(2*entranceSpring.mass);
+const frequency=Math.sqrt(entranceSpring.stiffness/entranceSpring.mass-decay**2);
+// Stop only once the entire remaining oscillation is below 0.01% of travel.
+const duration=Math.ceil(Math.log(Math.hypot(1,decay/frequency)/.0001)/decay*1000);
+export const entranceTiming=Object.freeze({duration,delay:entranceSpring.delay,easing:'linear',fill:'backwards'});
+export function springProgress(seconds){
+  return 1-Math.exp(-decay*seconds)*(Math.cos(frequency*seconds)+decay/frequency*Math.sin(frequency*seconds));
+}
 export function entranceFrames(pose,viewportHeight,cardHeight){
   // Begin level and horizontally centered, with the card’s top at the window edge.
   const p0={x:0,y:(cardHeight-viewportHeight)/2};
   const p1={x:0,y:p0.y+(pose.y-p0.y)*.35};
   const p2={x:pose.x+35,y:pose.y-60};
   const p3={x:pose.x,y:pose.y};
-  return Array.from({length:41},(_,i)=>{
-    const t=i/40,u=1-t;
+  const steps=Math.ceil(duration/1000*120);
+  return Array.from({length:steps+1},(_,i)=>{
+    const offset=i/steps;
+    const t=i===steps?1:springProgress(offset*duration/1000),u=1-t;
     const x=u*u*u*p0.x+3*u*u*t*p1.x+3*u*t*t*p2.x+t*t*t*p3.x;
     const y=u*u*u*p0.y+3*u*u*t*p1.y+3*u*t*t*p2.y+t*t*t*p3.y;
-    const angle=pose.angle*t*t*(3-2*t);
-    return {offset:t,transform:`translate(-50%, -50%) translate(${x}px, ${y}px) rotate(${angle}deg)`,opacity:1};
+    const angle=pose.angle*t;
+    return {offset,transform:`translate(-50%, -50%) translate(${x}px, ${y}px) rotate(${angle}deg)`,opacity:1};
   });
 }
 export function settledTransform(pose){return `translate(-50%, -50%) translate(${pose.x}px, ${pose.y}px) rotate(${pose.angle}deg)`;}

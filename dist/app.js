@@ -1,5 +1,5 @@
 import {nyTime,displayTime,buildIndex,findMoment,rankCandidates,priorDate} from './core.js';
-import {cleanTitle,stackLayout,imageDimensions,landingPose,entranceFrames,settledTransform} from './stack.js';
+import {cleanTitle,stackLayout,imageDimensions,landingPose,entranceFrames,entranceTiming,settledTransform} from './stack.js';
 const $=id=>document.getElementById(id);
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
 let index=new Map(),photos=[],cards=[],current=null,activeKey='',busy=false,generation=0,retryAt=0,lastClock='';
@@ -19,7 +19,7 @@ function animateCard(entry){
   entry.animation?.cancel();
   const card=entry.element;
   card.classList.add('arriving');
-  const animation=card.animate(entranceFrames(entry.pose,window.innerHeight,card.offsetHeight),{duration:1800,easing:'cubic-bezier(0.22, 0.65, 0.28, 1)',fill:'none'});
+  const animation=card.animate(entranceFrames(entry.pose,window.innerHeight,card.offsetHeight),entranceTiming);
   entry.animation=animation;
   animation.onfinish=()=>{if(entry.animation===animation){entry.animation=null;card.classList.remove('arriving');}};
 }
