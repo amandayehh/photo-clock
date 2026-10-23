@@ -48,3 +48,11 @@ test('spring overshoots gently and settles before the animation ends',()=>{
   const frames=entranceFrames({x:0,y:0,angle:2},800,400);
   assert.ok(frames.some(f=>Number(f.transform.match(/rotate\(([^d]+)deg/)[1])>2));
 });
+
+test('entry is top-center aligned across card sizes without a sideways bow',()=>{
+  for(const [viewportHeight,cardHeight] of [[1088,650],[844,450],[390,220]]){
+    const frames=entranceFrames({x:0,y:0,angle:2},viewportHeight,cardHeight);
+    assert.equal(frames[0].transform,`translate(-50%, -50%) translate(0px, ${(cardHeight-viewportHeight)/2}px) rotate(0deg)`);
+    assert.ok(frames.every(frame=>frame.transform.includes('translate(0px, ')));
+  }
+});

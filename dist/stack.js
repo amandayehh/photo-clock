@@ -40,7 +40,7 @@ export function entranceFrames(pose,viewportHeight,cardHeight){
   // Begin level and horizontally centered, with the card’s top at the window edge.
   const p0={x:0,y:(cardHeight-viewportHeight)/2};
   const p1={x:0,y:p0.y+(pose.y-p0.y)*.35};
-  const p2={x:pose.x+35,y:pose.y-60};
+  const p2={x:pose.x,y:pose.y-60};
   const p3={x:pose.x,y:pose.y};
   const steps=Math.ceil(duration/1000*120);
   return Array.from({length:steps+1},(_,i)=>{
