@@ -1,5 +1,5 @@
 import {bindCardInteraction,releaseHeldCard} from './interaction.js';
-import {nyTime,displayTime,buildIndex,findMoment,createCandidateSelector,priorDate} from './core.js';
+import {nyTime,displayTime,displayCaptureDate,buildIndex,findMoment,createCandidateSelector,priorDate} from './core.js';
 import {cleanTitle,stackLayout,imageDimensions,landingPose,entranceFrames,entranceTiming,settledTransform} from './stack.js';
 const $=id=>document.getElementById(id);
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
@@ -14,9 +14,8 @@ function updateClock(){const state=nyTime(),t=displayTime(state.minute),text=`${
 function href(element,url){if(/^https:\/\//.test(url||''))element.href=url;else element.removeAttribute('href');}
 function showCredits(photo){$('credit-title').textContent=cleanTitle(photo.title);$('credit-author').textContent=[photo.attribution,photo.artist&&(!photo.attribution||!photo.attribution.includes(photo.artist))?photo.artist:'',photo.credit&&photo.credit!=='Own work'&&photo.credit!==photo.artist?photo.credit:''].filter(Boolean).join(' · ');const t=displayTime(photo.minute);$('credit-capture').textContent=`Recorded at ${t.clock} ${t.period} · ${photo.capture_date}`;$('credit-evidence').textContent=photo.timezone_status==='explicit_offset'?'Capture time includes a recorded time-zone offset.':'Camera time is assumed local to New York; the camera clock has not been independently verified.';$('credit-license').textContent=photo.license;href($('credit-license'),photo.license_url||photo.source_url);href($('credit-source'),photo.source_url);$('credits').showModal();}
 function layoutCards(){const v=viewport(),layout=stackLayout(v.width,v.height,photos.map(p=>p.width/p.height));for(const entry of cards){entry.animation?.cancel();entry.animation=null;entry.element.classList.remove('arriving');const size=imageDimensions(layout.area,entry.ratio);const pose=entry.position||landingPose(entry.photo.pageid,entry.sequence,Math.min(v.width,v.height));if(entry.position){pose.x=Math.max(-v.width/2+32,Math.min(v.width/2-32,pose.x));pose.y=Math.max(-v.height/2+32,Math.min(v.height/2-32,pose.y));}entry.pose=pose;const el=entry.element;el.style.width=`${size.width+layout.pad*2}px`;el.style.setProperty('--image-height',`${size.height}px`);el.style.setProperty('--pad',`${layout.pad}px`);el.style.setProperty('--gap',`${layout.gap}px`);el.style.setProperty('--radius',`${layout.radius}px`);
-  // Long filenames stay on one line; the complete cleaned name is accessible in credits.
-  const titleSize=Math.min(layout.titleSize,Math.max(10,size.width/(Math.max(1,entry.title.length)*.53)));
-  el.style.setProperty('--title-size',`${titleSize}px`);el.style.transform=settledTransform(pose);
+  // All front titles use the same size; only their available width varies.
+  el.style.setProperty('--title-size',`${layout.titleSize}px`);el.style.transform=settledTransform(pose);
 }}
 // Shared by automatic arrivals and the temporary, explicitly requested replay.
 function animateCard(entry){
@@ -38,10 +37,15 @@ function printPhoto(photo,img){
   const front=document.createElement('span');front.className='card-front';
   const label=document.createElement('span');label.className='card-title';label.textContent=title;
   img.className='card-image';img.alt='';img.draggable=false;
-  front.append(label,img);
+  const header=document.createElement('span');header.className='card-header';
+  const stamp=document.createElement('span');stamp.className='card-stamp';
+  const time=displayTime(photo.minute);
+  const captureTime=document.createElement('span');captureTime.textContent=`${time.clock} ${time.period}`;
+  const captureDate=document.createElement('time');captureDate.dateTime=photo.capture_date;captureDate.textContent=displayCaptureDate(photo.capture_date);
+  stamp.setAttribute('aria-label',`Photographed at ${time.clock} ${time.period} on ${photo.capture_date}`);
+  stamp.append(captureTime,captureDate);header.append(label,stamp);front.append(header,img);
   const back=document.createElement('span');back.className='card-back';back.setAttribute('aria-hidden','true');
   const addDetail=(text,className)=>{const line=document.createElement('span');line.className=className;line.textContent=text;back.append(line);};
-  const time=displayTime(photo.minute);
   addDetail(title,'back-title');
   addDetail([photo.attribution||photo.artist,photo.credit&&photo.credit!=='Own work'&&photo.credit!==photo.artist?photo.credit:''].filter(Boolean).join(' · '),'back-author');
   addDetail(`${time.clock} ${time.period} · ${photo.capture_date}`,'back-date');

@@ -13,7 +13,7 @@ export function stackLayout(width,height,ratios){
   // One common fit factor preserves equal image area even on narrow screens.
   // The requested reference is a square with side = 50% of the shorter dimension.
   const fits=side=>shapes.every(r=>{
-    const w=side*Math.sqrt(r)+2*pad,h=side/Math.sqrt(r)+2*pad+gap+titleSize*1.15;
+    const w=side*Math.sqrt(r)+2*pad,h=side/Math.sqrt(r)+2*pad+gap+titleSize*1.185;
     return w*Math.cos(theta)+h*Math.sin(theta)<=width*.92 && h*Math.cos(theta)+w*Math.sin(theta)<=height*.84;
   });
   let low=0,high=short*.5;

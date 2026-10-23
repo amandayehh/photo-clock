@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {nyTime,priorDate,displayTime,buildIndex,findMoment,shuffleCandidates,createCandidateSelector} from '../dist/core.js';
+import {nyTime,priorDate,displayTime,displayCaptureDate,buildIndex,findMoment,shuffleCandidates,createCandidateSelector} from '../dist/core.js';
 const photo=(pageid,minute,artist='A')=>({pageid,minute,artist,capture_date:'2020-01-01',camera_model:'Camera',relevance:'camera_gps_in_nyc',timezone_status:'assumed_local'});
 test('exact match and held minute select the same moment',()=>{const i=buildIndex([photo(1,121),photo(2,124)]);assert.equal(findMoment(i,121,'2026-10-23').minute,121);assert.equal(findMoment(i,123,'2026-10-23').minute,121);assert.equal(findMoment(i,123,'2026-10-23').lag,2);assert.equal(findMoment(i,124,'2026-10-23').minute,124);});
 test('initial visit across midnight chooses previous calendar day',()=>{const m=findMoment(buildIndex([photo(1,1438),photo(2,30)]),2,'2026-01-01');assert.equal(m.minute,1438);assert.equal(m.date,'2025-12-31');assert.equal(m.lag,4);});
@@ -39,3 +39,10 @@ test('a minute keeps its random order during retries and draws again for a new m
   assert.deepEqual(createCandidateSelector(()=>.99)(photos,'2026-10-23',30).map(p=>p.pageid),[1,2,3]);
 });
 test('real collection can resolve every minute without inventing capture times',()=>{const {photos}=JSON.parse(readFileSync(new URL('../dist/photos.json',import.meta.url)));assert.equal(photos.length,482);const i=buildIndex(photos);assert.equal(i.size,298);for(let minute=0;minute<1440;minute++){const m=findMoment(i,minute,'2026-10-23');assert.ok(m);assert.equal(m.photos[0].minute,m.minute);assert.ok(m.lag<=86);}for(const p of photos){assert.ok(p.source_url.startsWith('https://commons.wikimedia.org/'));assert.ok(p.thumbnail_url.startsWith('https://'));assert.ok(p.artist||p.attribution||p.credit);assert.ok(p.license);}});
+
+test('capture dates match the card format without time-zone shifts',()=>{
+  assert.equal(displayCaptureDate('2026-10-12'),'Oct/12/2026');
+  assert.equal(displayCaptureDate('2009-01-01'),'Jan/01/2009');
+  assert.equal(displayCaptureDate('2024-02-29'),'Feb/29/2024');
+  assert.equal(displayCaptureDate(''), '');
+});
