@@ -9,7 +9,7 @@ export function stackLayout(width,height,ratios){
   const short=Math.min(width,height),pad=Math.max(7,Math.min(20,short*10/544));
   const titleSize=Math.max(14,Math.min(40,short*20/544));
   const stampSize=Math.max(9,titleSize*.45);
-  const gap=pad,theta=3*Math.PI/180;
+  const gap=pad*.75,theta=3*Math.PI/180;
   const shapes=ratios.length?ratios:[1];
   // One common fit factor preserves equal image area even on narrow screens.
   // The requested reference is a square with side = 50% of the shorter dimension.
