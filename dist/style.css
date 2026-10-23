@@ -28,6 +28,7 @@
 .card-back{gap:calc(var(--pad) * 2)}
 .card-metadata{display:grid;grid-template-columns:minmax(0,23%) minmax(0,1fr);column-gap:var(--pad);row-gap:var(--pad);margin-top:auto;width:100%;max-width:75%;align-self:flex-start;font-size:var(--stamp-size);font-weight:400;line-height:1.5;text-align:left}
 .metadata-label{color:#999}.metadata-value{color:#282828;white-space:pre-line;overflow-wrap:anywhere}
+.metadata-description{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;line-clamp:3;overflow:hidden;max-height:3lh}
 
 .card-stamp,.card-metadata{letter-spacing:.01em}
 

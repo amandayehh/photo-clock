@@ -54,6 +54,7 @@ function printPhoto(photo,img){
   for(const [name,value] of photoMetadataRows(photo)){
     const term=document.createElement('span');term.className='metadata-label';term.textContent=name;
     const detail=document.createElement('span');detail.className='metadata-value';detail.textContent=value;
+    if(name==='Description')detail.classList.add('metadata-description');
     metadata.append(term,detail);
   }
   if(metadata.childElementCount)backContent.append(metadata);
