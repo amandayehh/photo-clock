@@ -47,7 +47,6 @@ function printPhoto(photo,img){
   addDetail(`${time.clock} ${time.period} · ${photo.capture_date}`,'back-date');
   addDetail(photo.license,'back-license');
   addDetail('Wikimedia Commons','back-source');
-  addDetail('Release to return to the photograph','back-hint');
   flipper.append(front,back);card.append(flipper);$('pile').append(card);
   const entry={element:card,photo,title,ratio:photo.width/photo.height,sequence:cards.length,flipped:false,pose:null,position:null,animation:null};
   bindCardInteraction(card,{

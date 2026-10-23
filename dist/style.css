@@ -13,5 +13,5 @@
 .card-back{position:absolute;inset:0;display:flex;flex-direction:column;gap:clamp(5px,1.3vmin,14px);transform:rotateY(180deg);overflow:hidden;text-align:left;font-size:clamp(11px,1.65vmin,18px);line-height:1.35;overflow-wrap:anywhere}
 .back-title{font-size:clamp(15px,2.5vmin,28px);line-height:1.15;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
 .back-author{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:4;overflow:hidden}
-.back-date,.back-license{color:#555}.back-source{color:#777;font-size:.85em}.back-hint{margin-top:auto;color:#999;font-size:.75em}
+.back-date,.back-license{color:#555}.back-source{color:#777;font-size:.85em}
 @media(prefers-reduced-motion:reduce){.card-flipper{transition:none}}
