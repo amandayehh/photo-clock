@@ -1,3 +1,4 @@
+import {applySmoothing} from './smoothing.js';
 import {bindCardInteraction,releaseHeldCard} from './interaction.js';
 import {nyTime,displayTime,displayCaptureDate,photoMetadataRows,buildIndex,findMoment,createCandidateSelector,priorDate} from './core.js';
 import {cleanTitle,stackLayout,imageDimensions,landingPose,entranceFrames,entranceTiming,settledTransform} from './stack.js';
@@ -15,7 +16,7 @@ function href(element,url){if(/^https:\/\//.test(url||''))element.href=url;else 
 function showCredits(photo){$('credit-title').textContent=cleanTitle(photo.title);$('credit-author').textContent=[photo.attribution,photo.artist&&(!photo.attribution||!photo.attribution.includes(photo.artist))?photo.artist:'',photo.credit&&photo.credit!=='Own work'&&photo.credit!==photo.artist?photo.credit:''].filter(Boolean).join(' · ');const t=displayTime(photo.minute);$('credit-capture').textContent=`Recorded at ${t.clock} ${t.period} · ${photo.capture_date}`;$('credit-evidence').textContent=photo.timezone_status==='explicit_offset'?'Capture time includes a recorded time-zone offset.':'Camera time is assumed local to New York; the camera clock has not been independently verified.';$('credit-license').textContent=photo.license;href($('credit-license'),photo.license_url||photo.source_url);href($('credit-source'),photo.source_url);$('credits').showModal();}
 function layoutCards(){const v=viewport(),layout=stackLayout(v.width,v.height,photos.map(p=>p.width/p.height));for(const entry of cards){entry.animation?.cancel();entry.animation=null;entry.element.classList.remove('arriving');const size=imageDimensions(layout.area,entry.ratio);const pose=entry.position||landingPose(entry.photo.pageid,entry.sequence,Math.min(v.width,v.height));if(entry.position){pose.x=Math.max(-v.width/2+32,Math.min(v.width/2-32,pose.x));pose.y=Math.max(-v.height/2+32,Math.min(v.height/2-32,pose.y));}entry.pose=pose;const el=entry.element;el.style.width=`${size.width+layout.pad*2}px`;el.style.setProperty('--image-height',`${size.height}px`);el.style.setProperty('--pad',`${layout.pad}px`);el.style.setProperty('--gap',`${layout.gap}px`);el.style.setProperty('--radius',`${layout.radius}px`);
   // Titles keep the same size and truncate to one line on the front.
-  el.style.setProperty('--title-size',`${layout.titleSize}px`);el.style.setProperty('--stamp-size',`${layout.stampSize}px`);el.style.transform=settledTransform(pose);
+  el.style.setProperty('--title-size',`${layout.titleSize}px`);el.style.setProperty('--stamp-size',`${layout.stampSize}px`);el.style.transform=settledTransform(pose);applySmoothing(entry,size,layout);
 }}
 // Shared by automatic arrivals and the temporary, explicitly requested replay.
 function animateCard(entry){
@@ -45,18 +46,19 @@ function printPhoto(photo,img){
   stamp.setAttribute('aria-label',`Photographed at ${time.clock} ${time.period} on ${photo.capture_date}`);
   stamp.append(captureTime,captureDate);header.append(label);front.append(header,img,stamp);
   const back=document.createElement('span');back.className='card-back';back.setAttribute('aria-hidden','true');
+  const backContent=document.createElement('span');backContent.className='back-content';back.append(backContent);
   const backHeader=document.createElement('span');backHeader.className='card-header';
   const backTitle=label.cloneNode(true);backTitle.classList.add('back-title');
-  backHeader.append(backTitle);back.append(backHeader);
+  backHeader.append(backTitle);backContent.append(backHeader);
   const metadata=document.createElement('span');metadata.className='card-metadata';
   for(const [name,value] of photoMetadataRows(photo)){
     const term=document.createElement('span');term.className='metadata-label';term.textContent=name;
     const detail=document.createElement('span');detail.className='metadata-value';detail.textContent=value;
     metadata.append(term,detail);
   }
-  if(metadata.childElementCount)back.append(metadata);
+  if(metadata.childElementCount)backContent.append(metadata);
   flipper.append(front,back);card.append(flipper);$('pile').append(card);
-  const entry={element:card,photo,title,ratio:photo.width/photo.height,sequence:cards.length,flipped:false,pose:null,position:null,animation:null};
+  const entry={element:card,front,image:img,photo,title,ratio:photo.width/photo.height,sequence:cards.length,flipped:false,pose:null,position:null,animation:null};
   bindCardInteraction(card,{
     onLift:()=>{entry.animation?.cancel();entry.animation=null;card.classList.remove('arriving');},
     onMove:(dx,dy)=>{

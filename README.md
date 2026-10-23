@@ -55,3 +55,5 @@ layout, image loading, and actual browser animation playback remain unverified.
 The design photographs are dynamic content slots populated from the collection,
 not static Figma image assets. Arial/Helvetica substitutes for the unavailable
 licensed Test Söhne font.
+
+Corner smoothing uses `figma-squircle` 1.1.0 (MIT), vendored in `dist/vendor/` with its license. The card silhouettes and image clipping paths use `cornerSmoothing: 0.6`. After upgrading the package, copy its `dist/index.js` and `LICENSE` into those vendor files.
