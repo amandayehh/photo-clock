@@ -32,8 +32,10 @@
 /* 60% smoothed silhouettes keep their shadows outside the card's content. */
 .card-front,.card-back{background:transparent;box-shadow:none;border-radius:0}
 .card-front{position:relative}
-.card-back{overflow:visible}
+.card-back{overflow:visible;padding:0}
 .card-front::before,.card-back::before{content:"";position:absolute;inset:0;background-image:var(--card-surface);background-size:100% 100%;background-repeat:no-repeat;filter:drop-shadow(0 4px 15px rgb(0 0 0 / .4));z-index:-1;pointer-events:none}
 .card-image{border-radius:0}
-.card-back>.back-content{display:flex;flex-direction:column;gap:calc(var(--pad) * 2);flex:1;min-height:0;overflow:auto}
+.card-back>.back-content{position:absolute;inset:var(--pad);display:flex;flex-direction:column;gap:calc(var(--pad) * 2);min-height:0;overflow:auto}
 .back-content>span{flex-shrink:0}
+/* Match the bottom text's leading to the front timestamp. */
+.card-metadata>.metadata-label:nth-last-child(2),.card-metadata>.metadata-value:last-child{line-height:1.15}
