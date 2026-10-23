@@ -6,7 +6,9 @@ const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
 let index=new Map(),photos=[],cards=[],current=null,activeKey='',busy=false,generation=0,retryAt=0,lastClock='';
 const failed=new Set();
 const chooseCandidates=createCandidateSelector();
-let stackOrder=0;
+function updateCardLayers(){
+  for(const entry of cards)entry.element.style.zIndex=String(entry.flipped?cards.length+1:entry.sequence+1);
+}
 function viewport(){return {width:window.innerWidth,height:window.innerHeight};}
 function updateClock(){const state=nyTime(),t=displayTime(state.minute),text=`${t.clock} ${t.period}`;if(lastClock!==text){$('clock').textContent=text;$('clock').setAttribute('aria-label',`${text}, New York time`);lastClock=text;}return state;}
 function href(element,url){if(/^https:\/\//.test(url||''))element.href=url;else element.removeAttribute('href');}
@@ -19,8 +21,6 @@ function layoutCards(){const v=viewport(),layout=stackLayout(v.width,v.height,ph
 // Shared by automatic arrivals and the temporary, explicitly requested replay.
 function animateCard(entry){
   if(!entry)return;
-  releaseHeldCard();
-  entry.element.style.zIndex=++stackOrder;
   entry.animation?.cancel();
   const card=entry.element;
   card.classList.add('arriving');
@@ -49,20 +49,19 @@ function printPhoto(photo,img){
   addDetail('Wikimedia Commons','back-source');
   addDetail('Release to return to the photograph','back-hint');
   flipper.append(front,back);card.append(flipper);$('pile').append(card);
-  card.style.zIndex=++stackOrder;
-  const entry={element:card,photo,title,ratio:photo.width/photo.height,sequence:cards.length,pose:null,position:null,animation:null};
+  const entry={element:card,photo,title,ratio:photo.width/photo.height,sequence:cards.length,flipped:false,pose:null,position:null,animation:null};
   bindCardInteraction(card,{
-    onLift:()=>{entry.animation?.cancel();entry.animation=null;card.classList.remove('arriving');card.style.zIndex=++stackOrder;},
+    onLift:()=>{entry.animation?.cancel();entry.animation=null;card.classList.remove('arriving');},
     onMove:(dx,dy)=>{
       const v=viewport();
       // Keep the card's center within the window so a dropped card stays reachable.
       entry.position={...entry.pose,x:Math.max(-v.width/2+32,Math.min(v.width/2-32,entry.pose.x+dx)),y:Math.max(-v.height/2+32,Math.min(v.height/2-32,entry.pose.y+dy))};
       entry.pose=entry.position;card.style.transform=settledTransform(entry.pose);
     },
-    onFlip:held=>{card.classList.toggle('held',held);card.setAttribute('aria-pressed',String(held));front.setAttribute('aria-hidden',String(held));back.setAttribute('aria-hidden',String(!held));},
+    onFlip:held=>{entry.flipped=held;updateCardLayers();card.classList.toggle('held',held);card.setAttribute('aria-pressed',String(held));front.setAttribute('aria-hidden',String(held));back.setAttribute('aria-hidden',String(!held));},
     onDetails:()=>showCredits(photo)
   });
-  cards.push(entry);current=photo;layoutCards();$('status').hidden=true;$('retry').hidden=true;
+  cards.push(entry);updateCardLayers();current=photo;layoutCards();$('status').hidden=true;$('retry').hidden=true;
   $('replay').hidden=false;
   if(!reducedMotion.matches)animateCard(entry);
 }
@@ -85,7 +84,7 @@ window.addEventListener('online',()=>{failed.clear();refresh(true);});
 // Refresh time on resume, but don't replace or reprint an unchanged held moment.
  document.addEventListener('visibilitychange',()=>{if(document.hidden)releaseHeldCard();else{updateClock();refresh();}});
 $('retry').addEventListener('click',()=>{if(!index.size)init();else{failed.clear();refresh(true);}});
-$('replay').addEventListener('click',()=>animateCard(cards.at(-1)));
+$('replay').addEventListener('click',()=>{releaseHeldCard();animateCard(cards.at(-1));});
 $('close-credits').addEventListener('click',()=>$('credits').close());
 $('credits').addEventListener('click',event=>{if(event.target===$('credits')){const r=$('credits').getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)$('credits').close();}});
 init();
