@@ -3,53 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f5f3ee">
-  <meta name="description" content="A New York City clock told through photographs recorded at the same minute. A living moment, held until the next.">
-  <title>New York Minute — A photographic clock</title>
+  <meta name="theme-color" content="#131313">
+  <meta name="description" content="New York time, one photograph at a time.">
+  <title>New York Minute</title>
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="style.css">
   <script type="module" src="app.js"></script>
 </head>
 <body>
-  <header class="masthead">
-    <a class="wordmark" href="./" aria-label="New York Minute home">New York <em>Minute.</em></a>
-    <span class="tagline">A city, in its own time.</span>
-    <button id="about-button" class="text-button">About the clock <span aria-hidden="true">↗</span></button>
-  </header>
-  <main>
-    <section class="clock-panel" aria-label="New York City clock">
-      <div class="clock-meta"><span id="mode"><i class="live-dot" aria-hidden="true"></i> LIVE FROM NEW YORK</span><span id="calendar">NEW YORK, NY</span></div>
-      <div class="clock-line"><time id="clock" aria-label="Current New York time">--:--</time><div class="clock-detail"><span id="period">—</span><span id="seconds" aria-hidden="true">:00</span></div></div>
-      <div class="clock-under"><span id="zone">EASTERN TIME</span><span id="match-status" role="status">Finding a moment in the city…</span></div>
-    </section>
-    <figure class="photograph">
-      <div class="image-stage" id="stage" aria-busy="true">
-        <img id="photo" alt="" hidden>
-        <div id="image-placeholder" class="image-placeholder"><span class="loading-ring" aria-hidden="true"></span><p>A New York minute is on its way.</p></div>
-        <button id="retry" class="retry" hidden>Try loading photographs again</button>
-      </div>
-      <figcaption>
-        <div class="capture"><span class="eyebrow">PHOTOGRAPHED AT</span><span id="capture-time">—</span><span id="capture-date">Camera-recorded time</span></div>
-        <div class="photo-caption"><a id="photo-title" target="_blank" rel="noopener noreferrer">Loading photograph…</a><p id="photo-credit"></p><div class="photo-links"><a id="license" target="_blank" rel="noopener noreferrer"></a><span aria-hidden="true">·</span><a id="source" target="_blank" rel="noopener noreferrer">View on Wikimedia Commons ↗</a></div></div>
-        <div class="photo-location"><span class="eyebrow">CITY CONNECTION</span><span id="location">New York City</span><span id="time-evidence">Capture time from camera metadata</span></div>
-      </figcaption>
-    </figure>
-    <div class="bottom-line"><p>A moment from another day. The same minute in New York.</p><button id="explore-button" class="text-button" aria-expanded="false" aria-controls="explorer">Explore the day <span aria-hidden="true">＋</span></button></div>
-    <section id="explorer" class="explorer" hidden aria-label="Explore photographs by time">
-      <div><h2>Take your time.</h2><p>Visit any minute. Empty minutes hold the last photograph.</p></div>
-      <form id="time-form"><label for="time-input">New York time</label><div class="time-controls"><input id="time-input" type="time" value="19:15" required step="60"><button class="solid-button" type="submit">Visit this minute</button><button id="live-button" class="text-button" type="button">Return to now ↗</button></div></form>
-    </section>
-    <p id="network-note" class="network-note" role="status" hidden></p>
+  <main aria-label="New York photographic clock">
+    <div id="pile" class="pile" aria-label="Photographs collected as time passes"></div>
+    <p id="status" class="status" role="status">Finding a New York moment…</p>
+    <button id="retry" class="retry" hidden>Try again</button>
+    <time id="clock" class="clock" aria-label="Current New York time">—:—</time>
   </main>
-  <footer><span>NEW YORK MINUTE <span class="footer-mark" aria-hidden="true">/</span> AN EXPERIMENT IN TIME & PLACE</span><button id="collection-button" class="text-button">The collection <span aria-hidden="true">↗</span></button></footer>
-  <dialog id="about-dialog" aria-labelledby="about-title">
-    <button id="close-about" class="close-button" aria-label="Close about dialog">×</button><span class="eyebrow">EVERY PHOTOGRAPH WAS A PRESENT MOMENT.</span><h2 id="about-title">The city keeps time.</h2>
-    <p>At each minute, this clock looks for a New York photograph whose camera recorded that same time of day. The photograph might be from yesterday or from years ago.</p>
-    <p>When a minute has no match, the previous photograph stays. The clock carries on. The caption always shows the photograph’s own recorded time.</p>
-    <h3>A different day, a different view.</h3><p>When several photographs match, we use a stable daily selection across photographers and photographic sequences. A refresh keeps the same choice; a new day can bring another view. Image availability can change that choice.</p>
-    <h3>About the collection</h3><p id="collection-description">This first edition uses a research collection from Wikimedia Commons.</p><p>Most camera timestamps do not have a verified time zone in this collection; we provisionally treat them as local to New York. Camera clocks can be wrong. Photos are selected using metadata, and the collection has not been fully visually reviewed.</p>
-    <p>This edition uses a saved collection from October 23, 2026. Automatic discovery and synchronization with Wikimedia are not connected yet.</p>
-    <p class="dialog-credit">Photographs belong to their respective creators. Each image links to its source and license and is displayed without cropping or alteration. The clock always follows <strong>America/New_York</strong>, including daylight saving time.</p>
+  <dialog id="credits" aria-labelledby="credit-title">
+    <button id="close-credits" class="close" aria-label="Close photograph details">×</button>
+    <h1 id="credit-title"></h1>
+    <p id="credit-author"></p>
+    <p id="credit-capture"></p>
+    <p id="credit-evidence" class="muted"></p>
+    <p class="links"><a id="credit-license" target="_blank" rel="noopener noreferrer"></a><a id="credit-source" target="_blank" rel="noopener noreferrer">Wikimedia Commons ↗</a></p>
+    <p class="muted small">This first edition uses a saved research collection. The clock follows New York time; during gaps, the previous photograph stays. Automatic collection updates are not connected yet.</p>
   </dialog>
-  <noscript><p class="noscript">Please enable JavaScript to display the live photographic clock.</p></noscript>
-</body></html>
+  <noscript><p class="status">Enable JavaScript to see the photographic clock.</p></noscript>
+</body>
+</html>
