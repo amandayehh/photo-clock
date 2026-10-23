@@ -32,7 +32,7 @@ function printPhoto(photo,img){
   if(current?.pageid===photo.pageid)return;
   const card=document.createElement('button');card.type='button';card.className='card';
   const title=cleanTitle(photo.title);
-  card.setAttribute('aria-label',`${title}. Hold still for one second to flip; drag to move. Keyboard: hold Space for details, arrow keys to move, Enter for full credits.`);
+  card.setAttribute('aria-label',`${title}. Hold still for 0.6 seconds to flip; drag to move. Keyboard: hold Space for details, arrow keys to move, Enter for full credits.`);
   card.setAttribute('aria-pressed','false');
   const flipper=document.createElement('span');flipper.className='card-flipper';
   const front=document.createElement('span');front.className='card-front';

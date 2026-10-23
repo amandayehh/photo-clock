@@ -27,7 +27,7 @@ export function bindCardInteraction(card,{onLift,onMove,onFlip,onDetails}){
     event.preventDefault();
     lift(false);
     pointer={id:event.pointerId,x:event.clientX,y:event.clientY,startX:event.clientX,startY:event.clientY,dragging:false};
-    flipTimer=setTimeout(()=>{flipTimer=null;if(pointer&&!pointer.dragging)onFlip(true);},1000);
+    flipTimer=setTimeout(()=>{flipTimer=null;if(pointer&&!pointer.dragging)onFlip(true);},600);
     card.setPointerCapture(event.pointerId);
     card.focus({preventScroll:true});
   });
