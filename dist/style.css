@@ -21,6 +21,7 @@
 .card-back>span{flex-shrink:0}
 .card.held .card-back{pointer-events:auto}
 
+.card-title{letter-spacing:-.01em}
 .card-front .card-title{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 .card-back{gap:calc(var(--pad) * 2)}
