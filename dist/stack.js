@@ -27,29 +27,14 @@ export function landingPose(id,sequence,short){
   // Alternate the tilt, giving successive white edges room to show.
   return {x:((seed%13)-6)*scale,y:((Math.floor(seed/13)%9)-4)*scale,angle:(sequence%2===0?1:-1)*(1.4+(seed%15)/10)};
 }
-// Physical spring from the supplied Figma settings, starting at rest.
-export const entranceSpring=Object.freeze({mass:1,stiffness:100,damping:15,delay:0});
-const decay=entranceSpring.damping/(2*entranceSpring.mass);
-const frequency=Math.sqrt(entranceSpring.stiffness/entranceSpring.mass-decay**2);
-// Stop only once the entire remaining oscillation is below 0.01% of travel.
-const springDuration=Math.ceil(Math.log(Math.hypot(1,decay/frequency)/.0001)/decay*1000);
-// Play the complete spring curve in exactly one second.
-const duration=1000;
-export const entranceTiming=Object.freeze({duration,delay:entranceSpring.delay,easing:'linear',fill:'backwards'});
-export function springProgress(seconds){
-  return 1-Math.exp(-decay*seconds)*(Math.cos(frequency*seconds)+decay/frequency*Math.sin(frequency*seconds));
-}
+// Original easing, with the current one-second duration and no start delay.
+export const entranceTiming=Object.freeze({duration:1000,delay:0,easing:'cubic-bezier(0.22, 0.65, 0.28, 1)',fill:'backwards'});
 export function entranceFrames(pose,viewportHeight,cardHeight){
-  // Begin centered and level, fully above the viewport, including the shadow.
-  const p0={x:0,y:-(viewportHeight+cardHeight)/2-80};
-  const steps=Math.ceil(duration/1000*120);
-  return Array.from({length:steps+1},(_,i)=>{
-    const offset=i/steps;
-    const t=i===steps?1:springProgress(offset*springDuration/1000);
-    const x=p0.x+(pose.x-p0.x)*t;
-    const y=p0.y+(pose.y-p0.y)*t;
-    const angle=pose.angle*t;
-    return {offset,transform:`translate(-50%, -50%) translate(${x}px, ${y}px) rotate(${angle}deg)`,opacity:1};
-  });
+  // Interpolate directly from above the window to the final pose, with no spatial curve.
+  const start={x:0,y:-(viewportHeight+cardHeight)/2-80,angle:0};
+  return [
+    {offset:0,transform:settledTransform(start),opacity:1},
+    {offset:1,transform:settledTransform(pose),opacity:1}
+  ];
 }
 export function settledTransform(pose){return `translate(-50%, -50%) translate(${pose.x}px, ${pose.y}px) rotate(${pose.angle}deg)`;}
