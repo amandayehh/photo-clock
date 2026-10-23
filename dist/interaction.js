@@ -15,9 +15,9 @@ export function bindCardInteraction(card,{onLift,onMove,onFlip,onDetails}){
   function lift(flipImmediately=true){releaseHeldCard();activeRelease=release;onLift();if(flipImmediately)onFlip(true);}
   function move(event){
     if(!pointer||event.pointerId!==pointer.id)return;
-    // Small pointer jitter is okay; an intentional drag cancels the hold gesture.
+    // Dragging cancels a pending flip, but an already flipped card stays flipped until release.
     if(!pointer.dragging&&Math.hypot(event.clientX-pointer.startX,event.clientY-pointer.startY)>6){
-      pointer.dragging=true;cancelFlip();onFlip(false);
+      pointer.dragging=true;cancelFlip();
     }
     onMove(event.clientX-pointer.x,event.clientY-pointer.y);
     pointer.x=event.clientX;pointer.y=event.clientY;

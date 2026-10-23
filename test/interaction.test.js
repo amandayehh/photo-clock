@@ -68,3 +68,16 @@ test('a quick click never flips later',t=>{
   t.mock.timers.tick(100);card.send('pointerup',down);
   t.mock.timers.tick(1000);assert.equal(state.held,false);
 });
+
+test('dragging an already flipped card keeps its back visible until mouse up',t=>{
+  t.mock.timers.enable({apis:['setTimeout']});
+  const {card,state}=setup();card.send('pointerdown',down);
+  t.mock.timers.tick(600);assert.equal(state.held,true);
+  card.send('pointermove',{pointerId:1,clientX:180,clientY:220});
+  t.mock.timers.tick(1000);
+  assert.deepEqual([state.x,state.y,state.held],[80,120,true]);
+  card.send('pointermove',{pointerId:1,clientX:200,clientY:240});
+  assert.equal(state.held,true);
+  card.send('pointerup',{pointerId:1,clientX:200,clientY:240});
+  assert.deepEqual([state.x,state.y,state.held],[100,140,false]);
+});
