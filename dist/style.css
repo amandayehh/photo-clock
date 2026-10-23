@@ -24,5 +24,5 @@
 .card-front .card-title{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 .card-back{gap:calc(var(--pad) * 2)}
-.card-metadata{display:grid;grid-template-columns:minmax(0,23%) minmax(0,1fr);column-gap:var(--pad);row-gap:var(--pad);margin-top:auto;width:100%;font-size:var(--stamp-size);font-weight:400;line-height:1.5;text-align:left}
+.card-metadata{display:grid;grid-template-columns:minmax(0,23%) minmax(0,1fr);column-gap:var(--pad);row-gap:var(--pad);margin-top:auto;width:100%;max-width:264px;align-self:flex-start;font-size:var(--stamp-size);font-weight:400;line-height:1.5;text-align:left}
 .metadata-label{color:#999}.metadata-value{color:#282828;white-space:pre-line;overflow-wrap:anywhere}
