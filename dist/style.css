@@ -2,3 +2,16 @@
 
 /* Temporary animation preview control. */
 .replay{position:fixed;top:max(20px,env(safe-area-inset-top));right:max(20px,env(safe-area-inset-right));z-index:3;padding:9px 13px;border:1px solid #ffffff30;border-radius:6px;background:#131313e6;color:#ccc;font-size:13px;line-height:1.2}.replay:hover{color:#fff;border-color:#ffffff60}
+
+/* Translation belongs to the outer card; the inner faces handle the flip. */
+.card{padding:0;background:transparent;box-shadow:none;display:block;perspective:1400px;touch-action:none;cursor:grab}
+.card-flipper{position:relative;display:grid;grid-template-columns:minmax(0,1fr);transform-style:preserve-3d;transition:transform 420ms cubic-bezier(.2,.7,.2,1);pointer-events:none}
+.card.held{cursor:grabbing}
+.card.held .card-flipper{transform:rotateY(180deg)}
+.card-front,.card-back{grid-area:1/1;min-width:0;border-radius:var(--radius);background:#fff;color:#282828;padding:var(--pad);backface-visibility:hidden;-webkit-backface-visibility:hidden;box-shadow:0 4px 30px rgb(0 0 0 / .4)}
+.card-front{display:flex;flex-direction:column;gap:var(--gap);transform:rotateY(0deg)}
+.card-back{position:absolute;inset:0;display:flex;flex-direction:column;gap:clamp(5px,1.3vmin,14px);transform:rotateY(180deg);overflow:hidden;text-align:left;font-size:clamp(11px,1.65vmin,18px);line-height:1.35;overflow-wrap:anywhere}
+.back-title{font-size:clamp(15px,2.5vmin,28px);line-height:1.15;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
+.back-author{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:4;overflow:hidden}
+.back-date,.back-license{color:#555}.back-source{color:#777;font-size:.85em}.back-hint{margin-top:auto;color:#999;font-size:.75em}
+@media(prefers-reduced-motion:reduce){.card-flipper{transition:none}}
