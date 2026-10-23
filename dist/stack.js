@@ -37,8 +37,8 @@ export function springProgress(seconds){
   return 1-Math.exp(-decay*seconds)*(Math.cos(frequency*seconds)+decay/frequency*Math.sin(frequency*seconds));
 }
 export function entranceFrames(pose,viewportHeight,cardHeight){
-  // Begin level and horizontally centered, with the card’s top at the window edge.
-  const p0={x:0,y:(cardHeight-viewportHeight)/2};
+  // Begin centered and level, fully above the viewport, including the shadow.
+  const p0={x:0,y:-(viewportHeight+cardHeight)/2-80};
   const p1={x:0,y:p0.y+(pose.y-p0.y)*.35};
   const p2={x:pose.x+35,y:pose.y-60};
   const p3={x:pose.x,y:pose.y};
