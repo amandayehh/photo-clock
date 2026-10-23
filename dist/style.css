@@ -13,8 +13,6 @@
 .card-front{display:flex;flex-direction:column;gap:var(--gap);transform:rotateY(0deg)}
 .card-back{position:absolute;inset:0;display:flex;flex-direction:column;gap:clamp(5px,1.3vmin,14px);transform:rotateY(180deg);overflow:auto;text-align:left;font-size:clamp(11px,1.65vmin,18px);line-height:1.35;overflow-wrap:anywhere}
 .back-title{white-space:normal;text-overflow:clip;overflow:visible;overflow-wrap:anywhere}
-.back-author{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:4;overflow:hidden}
-.back-date,.back-license{color:#555}.back-source{color:#777;font-size:.85em}
 @media(prefers-reduced-motion:reduce){.card-flipper{transition:none}}
 
 .card-header{display:flex;align-items:flex-start;gap:var(--pad);min-width:0;width:100%;min-height:calc(var(--title-size) * 1.15)}
@@ -24,3 +22,7 @@
 .card.held .card-back{pointer-events:auto}
 
 .card-front .card-title{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.card-back{gap:calc(var(--pad) * 2)}
+.card-metadata{display:grid;grid-template-columns:minmax(0,23%) minmax(0,1fr);column-gap:var(--pad);row-gap:var(--pad);margin-top:auto;width:100%;font-size:var(--stamp-size);font-weight:400;line-height:1.5;text-align:left}
+.metadata-label{color:#999}.metadata-value{color:#282828;white-space:pre-line;overflow-wrap:anywhere}

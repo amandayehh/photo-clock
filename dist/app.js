@@ -1,5 +1,5 @@
 import {bindCardInteraction,releaseHeldCard} from './interaction.js';
-import {nyTime,displayTime,displayCaptureDate,buildIndex,findMoment,createCandidateSelector,priorDate} from './core.js';
+import {nyTime,displayTime,displayCaptureDate,photoMetadataRows,buildIndex,findMoment,createCandidateSelector,priorDate} from './core.js';
 import {cleanTitle,stackLayout,imageDimensions,landingPose,entranceFrames,entranceTiming,settledTransform} from './stack.js';
 const $=id=>document.getElementById(id);
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
@@ -45,14 +45,16 @@ function printPhoto(photo,img){
   stamp.setAttribute('aria-label',`Photographed at ${time.clock} ${time.period} on ${photo.capture_date}`);
   stamp.append(captureTime,captureDate);header.append(label);front.append(header,img,stamp);
   const back=document.createElement('span');back.className='card-back';back.setAttribute('aria-hidden','true');
-  const addDetail=(text,className)=>{const line=document.createElement('span');line.className=className;line.textContent=text;back.append(line);};
   const backHeader=document.createElement('span');backHeader.className='card-header';
   const backTitle=label.cloneNode(true);backTitle.classList.add('back-title');
   backHeader.append(backTitle);back.append(backHeader);
-  addDetail([photo.attribution||photo.artist,photo.credit&&photo.credit!=='Own work'&&photo.credit!==photo.artist?photo.credit:''].filter(Boolean).join(' · '),'back-author');
-  addDetail(`${time.clock} ${time.period} · ${photo.capture_date}`,'back-date');
-  addDetail(photo.license,'back-license');
-  addDetail('Wikimedia Commons','back-source');
+  const metadata=document.createElement('span');metadata.className='card-metadata';
+  for(const [name,value] of photoMetadataRows(photo)){
+    const term=document.createElement('span');term.className='metadata-label';term.textContent=name;
+    const detail=document.createElement('span');detail.className='metadata-value';detail.textContent=value;
+    metadata.append(term,detail);
+  }
+  if(metadata.childElementCount)back.append(metadata);
   flipper.append(front,back);card.append(flipper);$('pile').append(card);
   const entry={element:card,photo,title,ratio:photo.width/photo.height,sequence:cards.length,flipped:false,pose:null,position:null,animation:null};
   bindCardInteraction(card,{

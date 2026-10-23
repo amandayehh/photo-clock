@@ -36,3 +36,22 @@ export function displayCaptureDate(date){
   const month=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][Number(match[2])-1];
   return month?`${month}/${match[3]}/${match[1]}`:date;
 }
+
+export function photoMetadataRows(photo){
+  const present=value=>typeof value==='string'&&value.trim()?value.trim():'';
+  const time=Number.isInteger(photo.minute)&&photo.minute>=0&&photo.minute<1440?displayTime(photo.minute):null;
+  const date=present(photo.capture_date);
+  const parsedDate=/^\d{4}-\d{2}-\d{2}$/.test(date)?new Date(date+'T12:00:00Z'):null;
+  const formattedDate=parsedDate&&!Number.isNaN(parsedDate.valueOf())?new Intl.DateTimeFormat('en-GB',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'}).format(parsedDate):date;
+  const artist=present(photo.artist),attribution=present(photo.attribution);
+  const author=attribution&&attribution!==artist?(attribution.includes(artist)?attribution:[artist,attribution].filter(Boolean).join(' · ')):artist;
+  return [
+    ['Description',present(photo.description)],
+    ['Time',time?`${time.clock} ${time.period}`:''],
+    ['Date',formattedDate],
+    ['Location',present(photo.borough)],
+    ['Source',present(photo.credit)],
+    ['Author',author],
+    ['License',present(photo.license)]
+  ].filter(([,value])=>value);
+}

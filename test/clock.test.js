@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {nyTime,priorDate,displayTime,displayCaptureDate,buildIndex,findMoment,shuffleCandidates,createCandidateSelector} from '../dist/core.js';
+import {nyTime,priorDate,displayTime,displayCaptureDate,photoMetadataRows,buildIndex,findMoment,shuffleCandidates,createCandidateSelector} from '../dist/core.js';
 const photo=(pageid,minute,artist='A')=>({pageid,minute,artist,capture_date:'2020-01-01',camera_model:'Camera',relevance:'camera_gps_in_nyc',timezone_status:'assumed_local'});
 test('exact match and held minute select the same moment',()=>{const i=buildIndex([photo(1,121),photo(2,124)]);assert.equal(findMoment(i,121,'2026-10-23').minute,121);assert.equal(findMoment(i,123,'2026-10-23').minute,121);assert.equal(findMoment(i,123,'2026-10-23').lag,2);assert.equal(findMoment(i,124,'2026-10-23').minute,124);});
 test('initial visit across midnight chooses previous calendar day',()=>{const m=findMoment(buildIndex([photo(1,1438),photo(2,30)]),2,'2026-01-01');assert.equal(m.minute,1438);assert.equal(m.date,'2025-12-31');assert.equal(m.lag,4);});
@@ -45,4 +45,14 @@ test('capture dates match the card format without time-zone shifts',()=>{
   assert.equal(displayCaptureDate('2009-01-01'),'Jan/01/2009');
   assert.equal(displayCaptureDate('2024-02-29'),'Feb/29/2024');
   assert.equal(displayCaptureDate(''), '');
+});
+
+test('back metadata uses labeled rows, recorded fields and license last',()=>{
+  const rows=photoMetadataRows({minute:1035,capture_date:'2015-05-30',description:'A city panorama.',borough:'Queens',credit:'Own work',artist:'King of Hearts',license:'CC BY-SA 4.0'});
+  assert.deepEqual(rows,[['Description','A city panorama.'],['Time','5:15 PM'],['Date','30 May 2015'],['Location','Queens'],['Source','Own work'],['Author','King of Hearts'],['License','CC BY-SA 4.0']]);
+});
+test('missing metadata rows are omitted without losing midnight',()=>{
+  assert.deepEqual(photoMetadataRows({}),[]);
+  assert.deepEqual(photoMetadataRows({minute:0,description:'  ',credit:null,artist:'',license:'CC0'}),[['Time','12:00 AM'],['License','CC0']]);
+  assert.deepEqual(photoMetadataRows({attribution:'Photographer credit'}),[['Author','Photographer credit']]);
 });
