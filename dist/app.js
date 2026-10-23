@@ -72,9 +72,9 @@ async function refresh(force=false){if(!index.size||busy&&!force)return;const st
     if(current?.pageid===photo.pageid){busy=false;retryAt=Date.now()+60000;return;}
     try{const img=await loadImage(photo.thumbnail_url);if(token!==generation)return;const latest=nyTime(),target=findMoment(index,latest.minute,latest.date);if(target&&`${target.date}|${target.minute}`!==key){busy=false;activeKey='';refresh();return;}printPhoto(photo,img);busy=false;retryAt=photo.minute===moment.minute?0:Date.now()+60000;return;}catch{failed.add(photo.pageid);}
   }
-  if(token!==generation)return;busy=false;retryAt=Date.now()+60000;if(!current){$('status').textContent='Photographs are temporarily unavailable.';$('retry').hidden=false;}
+  if(token!==generation)return;busy=false;retryAt=Date.now()+60000;if(!current){$('status').textContent='Photographs are temporarily unavailable.';$('status').hidden=false;$('retry').hidden=false;}
 }
-async function init(){updateClock();try{const response=await fetch('./photos.json');if(!response.ok)throw new Error('Collection unavailable');const data=await response.json();photos=data.photos;index=buildIndex(photos);if(!index.size)throw new Error('Empty collection');await refresh();}catch{$('status').textContent='The collection could not load.';$('retry').hidden=false;}}
+async function init(){updateClock();try{const response=await fetch('./photos.json');if(!response.ok)throw new Error('Collection unavailable');const data=await response.json();photos=data.photos;index=buildIndex(photos);if(!index.size)throw new Error('Empty collection');await refresh();}catch{$('status').textContent='The collection could not load.';$('status').hidden=false;$('retry').hidden=false;}}
 setInterval(()=>{updateClock();if(retryAt&&Date.now()>=retryAt&&!busy){retryAt=0;failed.clear();refresh(true);}else refresh();},1000);
 window.addEventListener('resize',()=>{releaseHeldCard();layoutCards();});
 window.addEventListener('blur',releaseHeldCard);
