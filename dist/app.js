@@ -13,9 +13,20 @@ function layoutCards(){const v=viewport(),layout=stackLayout(v.width,v.height,ph
   const titleSize=Math.min(layout.titleSize,Math.max(10,size.width/(Math.max(1,entry.title.length)*.53)));
   el.style.setProperty('--title-size',`${titleSize}px`);el.style.transform=settledTransform(pose);
 }}
+// Shared by automatic arrivals and the temporary, explicitly requested replay.
+function animateCard(entry){
+  if(!entry)return;
+  entry.animation?.cancel();
+  const card=entry.element;
+  card.classList.add('arriving');
+  const animation=card.animate(entranceFrames(entry.pose,window.innerHeight,card.offsetHeight),{duration:1800,easing:'cubic-bezier(0.22, 0.65, 0.28, 1)',fill:'none'});
+  entry.animation=animation;
+  animation.onfinish=()=>{if(entry.animation===animation){entry.animation=null;card.classList.remove('arriving');}};
+}
 function printPhoto(photo,img){if(current?.pageid===photo.pageid)return;for(const old of cards){old.element.tabIndex=-1;old.element.setAttribute('aria-hidden','true');old.element.style.pointerEvents='none';}
   const card=document.createElement('button');card.type='button';card.className='card';const title=cleanTitle(photo.title);card.setAttribute('aria-label',`${title}. View photographer and license details.`);card.title='View photograph credits';const label=document.createElement('span');label.className='card-title';label.textContent=title;img.className='card-image';img.alt='';img.draggable=false;card.append(label,img);card.addEventListener('click',()=>showCredits(photo));$('pile').append(card);const entry={element:card,photo,title,ratio:photo.width/photo.height,sequence:cards.length,pose:null,animation:null};cards.push(entry);current=photo;layoutCards();$('status').hidden=true;$('retry').hidden=true;
-  if(!reducedMotion.matches){card.classList.add('arriving');entry.animation=card.animate(entranceFrames(entry.pose,window.innerHeight,card.offsetHeight),{duration:1800,easing:'cubic-bezier(0.22, 0.65, 0.28, 1)',fill:'none'});entry.animation.onfinish=()=>{entry.animation=null;card.classList.remove('arriving');};}
+  $('replay').hidden=false;
+  if(!reducedMotion.matches)animateCard(entry);
 }
 function loadImage(url){return new Promise((resolve,reject)=>{const img=new Image();const timeout=setTimeout(()=>{img.onload=img.onerror=null;reject(new Error('Image timeout'));},10000);img.onload=()=>{clearTimeout(timeout);resolve(img);};img.onerror=()=>{clearTimeout(timeout);reject(new Error('Image unavailable'));};img.referrerPolicy='no-referrer';img.src=url;});}
 function alternatives(moment){let choices=rankCandidates(moment.photos,moment.date,moment.minute),cursor=moment.minute-1,day=moment.date;const seen=new Set(choices.map(p=>p.pageid));while(choices.length<8){if(cursor<0){day=priorDate(day);cursor=1439;}const previous=findMoment(index,cursor,day);if(!previous)break;const add=rankCandidates(previous.photos,previous.date,previous.minute).filter(p=>!seen.has(p.pageid));if(!add.length)break;choices.push(...add);add.forEach(p=>seen.add(p.pageid));cursor=previous.minute-1;day=previous.date;}return choices;}
@@ -35,6 +46,7 @@ window.addEventListener('online',()=>{failed.clear();refresh(true);});
 // Refresh time on resume, but don't replace or reprint an unchanged held moment.
  document.addEventListener('visibilitychange',()=>{if(!document.hidden){updateClock();refresh();}});
 $('retry').addEventListener('click',()=>{if(!index.size)init();else{failed.clear();refresh(true);}});
+$('replay').addEventListener('click',()=>animateCard(cards.at(-1)));
 $('close-credits').addEventListener('click',()=>$('credits').close());
 $('credits').addEventListener('click',event=>{if(event.target===$('credits')){const r=$('credits').getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)$('credits').close();}});
 init();
