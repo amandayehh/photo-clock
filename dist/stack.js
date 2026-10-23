@@ -8,17 +8,18 @@ export function cleanTitle(title){
 export function stackLayout(width,height,ratios){
   const short=Math.min(width,height),pad=Math.max(7,Math.min(20,short*10/544));
   const titleSize=Math.max(14,Math.min(40,short*20/544));
+  const stampSize=Math.max(9,titleSize*.45);
   const gap=pad,theta=3*Math.PI/180;
   const shapes=ratios.length?ratios:[1];
   // One common fit factor preserves equal image area even on narrow screens.
   // The requested reference is a square with side = 50% of the shorter dimension.
   const fits=side=>shapes.every(r=>{
-    const w=side*Math.sqrt(r)+2*pad,h=side/Math.sqrt(r)+2*pad+gap+titleSize*1.185;
+    const w=side*Math.sqrt(r)+2*pad,h=side/Math.sqrt(r)+2*pad+2*gap+titleSize*2.3+stampSize*1.15;
     return w*Math.cos(theta)+h*Math.sin(theta)<=width*.92 && h*Math.cos(theta)+w*Math.sin(theta)<=height*.84;
   });
   let low=0,high=short*.5;
   if(!fits(high)){for(let n=0;n<32;n++){const middle=(low+high)/2;if(fits(middle))low=middle;else high=middle;}}
-  return {side:high,area:high*high,pad,gap,titleSize,radius:pad*.8};
+  return {side:high,area:high*high,pad,gap,titleSize,stampSize,radius:pad*.8};
 }
 export function imageDimensions(area,ratio){return {width:Math.sqrt(area*ratio),height:Math.sqrt(area/ratio)};}
 export function landingPose(id,sequence,short){

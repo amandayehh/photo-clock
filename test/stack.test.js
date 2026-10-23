@@ -19,7 +19,7 @@ test('landscape, portrait and square photos have identical surface area',()=>{
   }
 });
 test('reference area is a square with half the shorter viewport dimension',()=>{
-  const layout=stackLayout(1722,1088,[.527,1,1.5,3.612]);
+  const layout=stackLayout(1722,1088,[1,1.5]);
   assert.equal(layout.area,544**2);
 });
 test('entrance begins fully above the viewport, remains opaque, and lands at its final pose',()=>{

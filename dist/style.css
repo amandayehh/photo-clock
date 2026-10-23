@@ -16,8 +16,10 @@
 .back-date,.back-license{color:#555}.back-source{color:#777;font-size:.85em}
 @media(prefers-reduced-motion:reduce){.card-flipper{transition:none}}
 
-.card-header{display:flex;align-items:flex-start;gap:var(--pad);min-width:0;width:100%;min-height:calc(var(--title-size) * 1.185)}
-.card-header .card-title{flex:1;min-width:0;padding-top:calc(var(--title-size) * .0175)}
-.card-stamp{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:calc(var(--title-size) * .15);font-size:calc(var(--title-size) * .45);line-height:1.15;color:#848484;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.card-header{display:flex;align-items:flex-start;gap:var(--pad);min-width:0;width:100%;min-height:calc(var(--title-size) * 1.15)}
+.card-header .card-title{flex:1;min-width:0}
+.card-stamp{flex:none;display:flex;justify-content:space-between;align-items:baseline;gap:var(--pad);width:100%;font-size:var(--stamp-size);line-height:1.15;color:#848484;white-space:nowrap;font-variant-numeric:tabular-nums}.card-stamp time{text-align:right}
 .card-back>span{flex-shrink:0}
 .card.held .card-back{pointer-events:auto}
+
+.card-front .card-title{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;white-space:normal;overflow-wrap:anywhere;overflow:hidden}
