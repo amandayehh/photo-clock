@@ -39,14 +39,16 @@ test('successive cards have small alternating final rotations',()=>{
 
 test('spring overshoots gently and settles before the animation ends',()=>{
   assert.equal(springProgress(0),0);
-  assert.equal(entranceTiming.delay,800);
+  assert.equal(entranceTiming.delay,0);
+  assert.equal(entranceTiming.duration,1000);
   assert.equal(entranceTiming.easing,'linear');
   assert.equal(entranceTiming.fill,'backwards');
   const peak=springProgress(Math.PI/Math.sqrt(100-7.5**2));
   assert.ok(peak>1.02&&peak<1.03);
-  assert.ok(Math.abs(springProgress(entranceTiming.duration/1000)-1)<.0001);
   const frames=entranceFrames({x:0,y:0,angle:2},800,400);
   assert.ok(frames.some(f=>Number(f.transform.match(/rotate\(([^d]+)deg/)[1])>2));
+  const nearEndAngle=Number(frames.at(-2).transform.match(/rotate\(([^d]+)deg/)[1]);
+  assert.ok(Math.abs(nearEndAngle-2)<.001);
 });
 
 test('the entire card and shadow begin outside the viewport for every card height',()=>{

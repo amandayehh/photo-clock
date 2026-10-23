@@ -27,11 +27,13 @@ export function landingPose(id,sequence,short){
   return {x:((seed%13)-6)*scale,y:((Math.floor(seed/13)%9)-4)*scale,angle:(sequence%2===0?1:-1)*(1.4+(seed%15)/10)};
 }
 // Physical spring from the supplied Figma settings, starting at rest.
-export const entranceSpring=Object.freeze({mass:1,stiffness:100,damping:15,delay:800});
+export const entranceSpring=Object.freeze({mass:1,stiffness:100,damping:15,delay:0});
 const decay=entranceSpring.damping/(2*entranceSpring.mass);
 const frequency=Math.sqrt(entranceSpring.stiffness/entranceSpring.mass-decay**2);
 // Stop only once the entire remaining oscillation is below 0.01% of travel.
-const duration=Math.ceil(Math.log(Math.hypot(1,decay/frequency)/.0001)/decay*1000);
+const springDuration=Math.ceil(Math.log(Math.hypot(1,decay/frequency)/.0001)/decay*1000);
+// Play the complete spring curve in exactly one second.
+const duration=1000;
 export const entranceTiming=Object.freeze({duration,delay:entranceSpring.delay,easing:'linear',fill:'backwards'});
 export function springProgress(seconds){
   return 1-Math.exp(-decay*seconds)*(Math.cos(frequency*seconds)+decay/frequency*Math.sin(frequency*seconds));
@@ -45,7 +47,7 @@ export function entranceFrames(pose,viewportHeight,cardHeight){
   const steps=Math.ceil(duration/1000*120);
   return Array.from({length:steps+1},(_,i)=>{
     const offset=i/steps;
-    const t=i===steps?1:springProgress(offset*duration/1000),u=1-t;
+    const t=i===steps?1:springProgress(offset*springDuration/1000),u=1-t;
     const x=u*u*u*p0.x+3*u*u*t*p1.x+3*u*t*t*p2.x+t*t*t*p3.x;
     const y=u*u*u*p0.y+3*u*u*t*p1.y+3*u*t*t*p2.y+t*t*t*p3.y;
     const angle=pose.angle*t;
