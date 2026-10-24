@@ -1,7 +1,7 @@
 import {applySmoothing} from './smoothing.js';
 import {bindCardInteraction,releaseHeldCard} from './interaction.js';
 import {createLinkDropTarget} from './drag-target.js';
-import {gridColumns,gridCardLayout,cardTransform} from './grid.js';
+import {gridColumns,gridLayout,cardTransform} from './grid.js';
 import {nyTime,displayTime,displayCaptureDate,photoMetadataRows,buildIndex,findMoment,createCandidateSelector,priorDate} from './core.js';
 import {cleanTitle,stackLayout,imageDimensions,landingPose,entranceFrames,entranceTiming} from './stack.js';
 const $=id=>document.getElementById(id);
@@ -23,10 +23,10 @@ function layoutCards(){
   const v=viewport(),stack=stackLayout(v.width,v.height,photos.map(p=>p.width/p.height));
   $('pile').style.setProperty('--grid-columns',gridColumns(v.width));
   const widths=gridMode?cards.map(entry=>entry.slot.getBoundingClientRect().width):[];
-  for(const [i,entry] of cards.entries()){
+  const layout=gridMode?gridLayout(widths.length?Math.min(...widths):1,cards.map(entry=>entry.ratio)):stack;
+  for(const entry of cards){
     entry.animation?.cancel();entry.animation=null;entry.element.classList.remove('arriving');
-    const layout=gridMode?gridCardLayout(widths[i],entry.ratio):stack;
-    const size=gridMode?layout:imageDimensions(layout.area,entry.ratio);
+    const size=imageDimensions(layout.area,entry.ratio);
     const pose=entry.position||homePose(entry);
     if(entry.position&&!gridMode){pose.x=Math.max(-v.width/2+32,Math.min(v.width/2-32,pose.x));pose.y=Math.max(-v.height/2+32,Math.min(v.height/2-32,pose.y));}
     entry.pose=pose;

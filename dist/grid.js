@@ -1,9 +1,11 @@
 export function gridColumns(width){return width>=1024?8:width>=768?6:4;}
-export function gridCardLayout(cellWidth,ratio){
+export function gridLayout(cellWidth,ratios){
   const pad=Math.max(3,Math.min(10,cellWidth*.045));
-  const width=Math.max(1,cellWidth-2*pad);
+  const available=Math.max(1,cellWidth-2*pad);
+  // One shared area fits even the widest photograph without changing its proportions.
+  const area=available**2/Math.max(1,...ratios);
   return {
-    width,height:width/ratio,pad,gap:pad*.75,radius:pad*.8,
+    area,pad,gap:pad*.75,radius:pad*.8,
     titleSize:Math.max(9,Math.min(18,cellWidth*.085)),
     stampSize:Math.max(7,Math.min(11,cellWidth*.045))
   };

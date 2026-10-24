@@ -1,20 +1,33 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {gridColumns,gridCardLayout,cardTransform} from '../dist/grid.js';
-import {settledTransform} from '../dist/stack.js';
+import {gridColumns,gridLayout,cardTransform} from '../dist/grid.js';
+import {settledTransform,imageDimensions} from '../dist/stack.js';
 
 test('grid switches between four, six and eight columns at responsive breakpoints',()=>{
   for(const [width,columns] of [[320,4],[390,4],[767,4],[768,6],[820,6],[1023,6],[1024,8],[1440,8],[2560,8]]){
     assert.equal(gridColumns(width),columns);
   }
 });
-test('grid cards fit their column and preserve portrait, square and landscape proportions',()=>{
-  for(const cell of [60,76,120,180,300])for(const ratio of [.527,1,1.5,3.612]){
-    const layout=gridCardLayout(cell,ratio);
-    assert.ok(Math.abs(layout.width+layout.pad*2-cell)<1e-8);
-    assert.ok(Math.abs(layout.width/layout.height-ratio)<1e-8);
-    assert.ok(layout.height>0&&layout.radius>0);
+test('grid photos have equal areas, fit their columns and retain their aspect ratios',()=>{
+  const ratios=[.527,1,1.5,3.612];
+  for(const cell of [60,76,120,180,300]){
+    const layout=gridLayout(cell,ratios);
+    for(const ratio of ratios){
+      const size=imageDimensions(layout.area,ratio);
+      assert.ok(size.width+layout.pad*2<=cell+1e-8);
+      assert.ok(Math.abs(size.width/size.height-ratio)<1e-8);
+      assert.ok(Math.abs(size.width*size.height-layout.area)<1e-8);
+      assert.ok(size.height>0&&layout.radius>0);
+    }
   }
+});
+test('grid layout handles empty and portrait-only collections and refits when a panorama arrives',()=>{
+  for(const ratios of [[],[.5],[1],[.5,1,5]]){
+    const layout=gridLayout(150,ratios);
+    assert.ok(Number.isFinite(layout.area)&&layout.area>0);
+    for(const ratio of ratios)assert.ok(imageDimensions(layout.area,ratio).width+layout.pad*2<=150+1e-8);
+  }
+  assert.ok(gridLayout(150,[.5,1,5]).area<gridLayout(150,[.5,1]).area);
 });
 test('grid cards return to their own cell; stacked cards retain their original positioning',()=>{
   assert.equal(cardTransform({x:0,y:0,angle:0},true),'translate(0px, 0px) rotate(0deg)');
