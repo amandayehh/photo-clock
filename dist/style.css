@@ -64,3 +64,5 @@ body.card-pressed,body.card-pressed *{cursor:grabbing!important}
 .grid-mode .card-stamp time{text-align:left}
 .grid-mode .card-stamp>*{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .grid-mode .card-front::before,.grid-mode .card-back::before{filter:drop-shadow(0 3px 5px rgb(0 0 0 / .3))}
+.view-motion-layer{position:fixed;inset:0;z-index:1;pointer-events:none}
+.view-motion-layer .card{pointer-events:none!important;will-change:transform}

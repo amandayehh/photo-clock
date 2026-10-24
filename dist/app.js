@@ -2,10 +2,12 @@ import {applySmoothing} from './smoothing.js';
 import {bindCardInteraction,releaseHeldCard} from './interaction.js';
 import {createLinkDropTarget} from './drag-target.js';
 import {gridColumns,gridLayout,cardTransform} from './grid.js';
+import {captureCards,createViewMotion} from './view-motion.js';
 import {nyTime,displayTime,displayCaptureDate,photoMetadataRows,buildIndex,findMoment,createCandidateSelector,priorDate} from './core.js';
 import {cleanTitle,stackLayout,imageDimensions,landingPose,entranceFrames,entranceTiming} from './stack.js';
 const $=id=>document.getElementById(id);
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
+const viewMotion=createViewMotion();
 const linkDropTarget=createLinkDropTarget($('link-drop-target'),url=>window.open(url,'_blank','noopener,noreferrer'));
 let index=new Map(),photos=[],cards=[],current=null,activeKey='',busy=false,generation=0,retryAt=0,lastClock='';
 let gridMode=false;
@@ -20,6 +22,7 @@ function href(element,url){if(/^https:\/\//.test(url||''))element.href=url;else 
 function showCredits(photo){$('credit-title').textContent=cleanTitle(photo.title);$('credit-author').textContent=[photo.attribution,photo.artist&&(!photo.attribution||!photo.attribution.includes(photo.artist))?photo.artist:'',photo.credit&&photo.credit!=='Own work'&&photo.credit!==photo.artist?photo.credit:''].filter(Boolean).join(' · ');const t=displayTime(photo.minute);$('credit-capture').textContent=`Recorded at ${t.clock} ${t.period} · ${photo.capture_date}`;$('credit-evidence').textContent=photo.timezone_status==='explicit_offset'?'Capture time includes a recorded time-zone offset.':'Camera time is assumed local to New York; the camera clock has not been independently verified.';$('credit-license').textContent=photo.license;href($('credit-license'),photo.license_url||photo.source_url);href($('credit-source'),photo.source_url);$('credits').showModal();}
 function homePose(entry){const v=viewport();return gridMode?{x:0,y:0,angle:0}:landingPose(entry.photo.pageid,entry.sequence,Math.min(v.width,v.height));}
 function layoutCards(){
+  viewMotion.finish();
   const v=viewport(),stack=stackLayout(v.width,v.height,photos.map(p=>p.width/p.height));
   $('pile').style.setProperty('--grid-columns',gridColumns(v.width));
   const widths=gridMode?cards.map(entry=>entry.slot.getBoundingClientRect().width):[];
@@ -36,6 +39,8 @@ function layoutCards(){
 }}
 function toggleView(){
   releaseHeldCard();
+  const before=reducedMotion.matches?null:captureCards(cards);
+  viewMotion.finish();
   gridMode=!gridMode;
   document.body.classList.toggle('grid-mode',gridMode);
   $('view-toggle').setAttribute('aria-pressed',String(gridMode));
@@ -43,6 +48,7 @@ function toggleView(){
   for(const entry of cards)entry.position=null;
   $('pile').scrollTop=0;
   layoutCards();
+  if(before)viewMotion.play(cards,before);
 }
 // Shared by automatic arrivals and the temporary, explicitly requested replay.
 function animateCard(entry){
@@ -142,7 +148,7 @@ window.addEventListener('online',()=>{failed.clear();refresh(true);});
 // Refresh time on resume, but don't replace or reprint an unchanged held moment.
  document.addEventListener('visibilitychange',()=>{if(document.hidden)releaseHeldCard();else{updateClock();refresh();}});
 $('retry').addEventListener('click',()=>{if(!index.size)init();else{failed.clear();refresh(true);}});
-$('replay').addEventListener('click',()=>{releaseHeldCard();animateCard(cards.at(-1));});
+$('replay').addEventListener('click',()=>{releaseHeldCard();viewMotion.finish();animateCard(cards.at(-1));});
 $('view-toggle').addEventListener('click',toggleView);
 $('close-credits').addEventListener('click',()=>$('credits').close());
 $('credits').addEventListener('click',event=>{if(event.target===$('credits')){const r=$('credits').getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)$('credits').close();}});
