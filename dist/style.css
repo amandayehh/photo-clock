@@ -51,3 +51,15 @@ body.card-pressed,body.card-pressed *{cursor:grabbing!important}
 .back-content>span{flex-shrink:0}
 /* Match the bottom text's leading to the front timestamp. */
 .card-metadata>.metadata-label:nth-last-child(2),.card-metadata>.metadata-value:last-child{line-height:1.15}
+
+.view-toggle{position:fixed;top:max(20px,env(safe-area-inset-top));left:max(20px,env(safe-area-inset-left));z-index:3;display:flex;gap:2px;padding:3px;border:1px solid #ffffff30;border-radius:6px;background:#131313e6;color:#999;font-size:13px;line-height:1.2}
+.view-toggle span{padding:6px 10px;border-radius:3px}
+.view-toggle .selected{background:#ffffff19;color:#fff}
+.view-toggle:hover{border-color:#ffffff60}
+.photo-slot{display:contents}
+.grid-mode .pile{inset:max(76px,calc(env(safe-area-inset-top) + 64px)) 0 max(90px,calc(env(safe-area-inset-bottom) + 70px));display:grid;grid-template-columns:repeat(var(--grid-columns,4),minmax(0,1fr));gap:clamp(8px,1.3vw,24px);align-content:start;align-items:start;padding:12px clamp(12px,2vw,32px) 28px;overflow-y:auto;overflow-x:hidden;scrollbar-gutter:stable;overscroll-behavior:contain;pointer-events:auto}
+.grid-mode .photo-slot{display:block;min-width:0}
+.grid-mode .card{position:relative;left:auto;top:auto;touch-action:pan-y}
+.grid-mode .card-stamp{flex-direction:column;align-items:flex-start;gap:2px;white-space:normal}
+.grid-mode .card-stamp time{text-align:left}
+.grid-mode .card-front::before,.grid-mode .card-back::before{filter:drop-shadow(0 3px 5px rgb(0 0 0 / .3))}
