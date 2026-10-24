@@ -60,9 +60,9 @@ body.card-pressed,body.card-pressed *{cursor:grabbing!important}
 .grid-mode .pile{inset:max(76px,calc(env(safe-area-inset-top) + 64px)) 0 max(90px,calc(env(safe-area-inset-bottom) + 70px));display:grid;grid-template-columns:repeat(var(--grid-columns,4),minmax(0,1fr));gap:clamp(8px,1.3vw,24px);align-content:start;align-items:start;padding:12px clamp(12px,2vw,32px) 28px;overflow-y:auto;overflow-x:hidden;scrollbar-gutter:stable;overscroll-behavior:contain;pointer-events:auto}
 .grid-mode .photo-slot{display:flex;justify-content:center;align-items:center;align-self:stretch;min-width:0}
 .grid-mode .card{position:relative;left:auto;top:auto;touch-action:pan-y}
-.grid-mode .card-stamp{flex-direction:column;align-items:flex-start;gap:2px;white-space:normal}
-.grid-mode .card-stamp time{text-align:left}
-.grid-mode .card-stamp>*{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.grid-mode .card-stamp{flex-direction:row;align-items:baseline;gap:var(--pad);white-space:nowrap}
+.grid-mode .card-stamp time{text-align:right}
+.grid-mode .card-stamp>*{min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .grid-mode .card-front::before,.grid-mode .card-back::before{filter:drop-shadow(0 3px 5px rgb(0 0 0 / .3))}
 .view-motion-layer{position:fixed;inset:0;z-index:1;pointer-events:none}
 .view-motion-layer .card{pointer-events:none!important;will-change:transform}
