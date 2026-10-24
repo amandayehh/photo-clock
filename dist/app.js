@@ -3,7 +3,8 @@ import {bindCardInteraction,releaseHeldCard} from './interaction.js';
 import {createLinkDropTarget} from './drag-target.js';
 import {gridColumns,gridLayout,cardTransform} from './grid.js';
 import {captureCards,createViewMotion} from './view-motion.js';
-import {nyTime,displayTime,displayCaptureDate,photoMetadataRows,buildIndex,findMoment,createCandidateSelector,priorDate} from './core.js';
+import {unseenCandidates,createDailyHistory} from './daily-selection.js';
+import {nyTime,displayTime,displayCaptureDate,photoMetadataRows,buildIndex,createCandidateSelector} from './core.js';
 import {cleanTitle,stackLayout,imageDimensions,landingPose,entranceFrames,entranceTiming} from './stack.js';
 const $=id=>document.getElementById(id);
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
@@ -13,6 +14,9 @@ let index=new Map(),photos=[],cards=[],current=null,activeKey='',busy=false,gene
 let gridMode=false;
 const failed=new Set();
 const chooseCandidates=createCandidateSelector();
+let storage;try{storage=window.localStorage;}catch{}
+const shownToday=createDailyHistory(storage);
+let displayedKey='';
 function updateCardLayers(){
   for(const entry of cards)entry.element.style.zIndex=String(entry.flipped?cards.length+1:entry.sequence+1);
 }
@@ -130,14 +134,37 @@ function printPhoto(photo,img){
   if(!reducedMotion.matches)animateCard(entry);
 }
 function loadImage(url){return new Promise((resolve,reject)=>{const img=new Image();const timeout=setTimeout(()=>{img.onload=img.onerror=null;reject(new Error('Image timeout'));},10000);img.onload=()=>{clearTimeout(timeout);resolve(img);};img.onerror=()=>{clearTimeout(timeout);reject(new Error('Image unavailable'));};img.referrerPolicy='no-referrer';img.src=url;});}
-function alternatives(moment){let choices=chooseCandidates(moment.photos,moment.date,moment.minute),cursor=moment.minute-1,day=moment.date;const seen=new Set(choices.map(p=>p.pageid));while(choices.length<8){if(cursor<0){day=priorDate(day);cursor=1439;}const previous=findMoment(index,cursor,day);if(!previous)break;const add=chooseCandidates(previous.photos,previous.date,previous.minute).filter(p=>!seen.has(p.pageid));if(!add.length)break;choices.push(...add);add.forEach(p=>seen.add(p.pageid));cursor=previous.minute-1;day=previous.date;}return choices;}
-async function refresh(force=false){if(!index.size||busy&&!force)return;const state=updateClock(),moment=findMoment(index,state.minute,state.date);if(!moment)return;const key=`${moment.date}|${moment.minute}`;if(!force&&key===activeKey)return;activeKey=key;const token=++generation;busy=true;let attempts=0;
-  for(const photo of alternatives(moment)){if(token!==generation)return;if(failed.has(photo.pageid))continue;if(++attempts>5)break;
-    // A missed minute or retry never prints the already visible card again.
-    if(current?.pageid===photo.pageid){busy=false;retryAt=Date.now()+60000;return;}
-    try{const img=await loadImage(photo.thumbnail_url);if(token!==generation)return;const latest=nyTime(),target=findMoment(index,latest.minute,latest.date);if(target&&`${target.date}|${target.minute}`!==key){busy=false;activeKey='';refresh();return;}printPhoto(photo,img);busy=false;retryAt=photo.minute===moment.minute?0:Date.now()+60000;return;}catch{failed.add(photo.pageid);}
+async function refresh(force=false){
+  if(!index.size||busy&&!force)return;
+  const state=updateClock(),key=`${state.date}|${state.minute}`;
+  if(key===displayedKey||!force&&key===activeKey)return;
+  activeKey=key;
+  const token=++generation;busy=true;let attempts=0,eligible=0;
+  const seen=shownToday.read(state.date);
+  if(current)seen.add(String(current.pageid));
+  for(const photo of unseenCandidates(index,state,seen,chooseCandidates)){
+    if(token!==generation)return;
+    eligible++;
+    if(failed.has(photo.pageid))continue;
+    if(++attempts>5)break;
+    try{
+      const img=await loadImage(photo.thumbnail_url);
+      if(token!==generation)return;
+      const latest=nyTime();
+      if(`${latest.date}|${latest.minute}`!==key){busy=false;activeKey='';refresh();return;}
+      // Another tab may have displayed this photo while its image was loading.
+      if(shownToday.read(state.date).has(String(photo.pageid)))continue;
+      printPhoto(photo,img);
+      shownToday.mark(state.date,photo.pageid);
+      displayedKey=key;busy=false;retryAt=0;return;
+    }catch{failed.add(photo.pageid);}
   }
-  if(token!==generation)return;busy=false;retryAt=Date.now()+60000;if(!current){$('status').textContent='Photographs are temporarily unavailable.';$('status').hidden=false;$('retry').hidden=false;}
+  if(token!==generation)return;
+  busy=false;retryAt=eligible?Date.now()+60000:0;
+  if(!current){
+    $('status').textContent=eligible?'Photographs are temporarily unavailable.':'All photographs have been shown today. New photographs resume at midnight in New York.';
+    $('status').hidden=false;$('retry').hidden=!eligible;
+  }
 }
 async function init(){updateClock();try{const response=await fetch('./photos.json');if(!response.ok)throw new Error('Collection unavailable');const data=await response.json();photos=data.photos;index=buildIndex(photos);if(!index.size)throw new Error('Empty collection');await refresh();}catch{$('status').textContent='The collection could not load.';$('status').hidden=false;$('retry').hidden=false;}}
 setInterval(()=>{updateClock();if(retryAt&&Date.now()>=retryAt&&!busy){retryAt=0;failed.clear();refresh(true);}else refresh();},1000);
