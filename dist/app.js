@@ -3,7 +3,7 @@ import {bindCardInteraction,releaseHeldCard} from './interaction.js';
 import {createLinkDropTarget} from './drag-target.js';
 import {gridColumns,gridLayout,cardTransform} from './grid.js';
 import {captureCards,createViewMotion} from './view-motion.js';
-import {unseenCandidates,createDailyHistory} from './daily-selection.js';
+import {unseenCandidates,createSessionHistory} from './daily-selection.js';
 import {nyTime,displayTime,displayCaptureDate,displayLocation,photoMetadataRows,buildIndex,createCandidateSelector} from './core.js';
 import {cleanTitle,stackLayout,imageDimensions,landingPose,entranceFrames,entranceTiming} from './stack.js';
 const $=id=>document.getElementById(id);
@@ -14,8 +14,7 @@ let index=new Map(),photos=[],cards=[],current=null,activeKey='',busy=false,gene
 let gridMode=false;
 const failed=new Set();
 const chooseCandidates=createCandidateSelector();
-let storage;try{storage=window.localStorage;}catch{}
-const shownToday=createDailyHistory(storage);
+const shownThisSession=createSessionHistory();
 let displayedKey='';
 function updateCardLayers(){
   for(const entry of cards)entry.element.style.zIndex=String(entry.flipped?cards.length+1:entry.sequence+1);
@@ -141,7 +140,7 @@ async function refresh(force=false){
   if(key===displayedKey||!force&&key===activeKey)return;
   activeKey=key;
   const token=++generation;busy=true;let attempts=0,eligible=0;
-  const seen=shownToday.read(state.date);
+  const seen=shownThisSession.read();
   if(current)seen.add(String(current.pageid));
   for(const photo of unseenCandidates(index,state,seen,chooseCandidates)){
     if(token!==generation)return;
@@ -153,17 +152,15 @@ async function refresh(force=false){
       if(token!==generation)return;
       const latest=nyTime();
       if(`${latest.date}|${latest.minute}`!==key){busy=false;activeKey='';refresh();return;}
-      // Another tab may have displayed this photo while its image was loading.
-      if(shownToday.read(state.date).has(String(photo.pageid)))continue;
       printPhoto(photo,img);
-      shownToday.mark(state.date,photo.pageid);
+      shownThisSession.mark(photo.pageid);
       displayedKey=key;busy=false;retryAt=0;return;
     }catch{failed.add(photo.pageid);}
   }
   if(token!==generation)return;
   busy=false;retryAt=eligible?Date.now()+60000:0;
   if(!current){
-    $('status').textContent=eligible?'Photographs are temporarily unavailable.':'All photographs have been shown today. New photographs resume at midnight in New York.';
+    $('status').textContent=eligible?'Photographs are temporarily unavailable.':'All photographs have been shown in this session. Refresh to start again.';
     $('status').hidden=false;$('retry').hidden=!eligible;
   }
 }

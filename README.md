@@ -38,11 +38,12 @@ not a fully curated release collection, and automatic Wikimedia synchronization
 is not yet connected. Time is always America/New_York, including daylight saving.
 Most capture timestamps are assumed local; this is disclosed in photo details.
 
-Missing minutes hold the previous image. Initial visits look backward across
-midnight when needed. Deterministic random selection first groups photographers,
-then photographic sequences, to avoid letting bursts dominate selection. Failed
-images try alternatives and earlier moments without removing the existing stack.
-An unchanged held photo is not reprinted. Failed loads are retried after a minute.
+Missing minutes use the nearest earlier photograph not yet shown in the current
+page session, searching backward across midnight when needed. Matching photos
+are randomly selected. Shown-photo history stays in memory for this page only:
+refreshing or opening a new tab starts fresh, and midnight does not clear it.
+Once all photographs have been shown, the current photo stays. Failed images
+try alternatives without removing the existing stack and are retried after a minute.
 
 Remote images remain on Wikimedia. Public metadata only is in dist/photos.json.
 No private study files, image originals, or credentials are included in the site.
