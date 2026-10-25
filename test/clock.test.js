@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {nyTime,priorDate,displayTime,displayCaptureDate,photoMetadataRows,buildIndex,findMoment,shuffleCandidates,createCandidateSelector} from '../dist/core.js';
+import {nyTime,priorDate,displayTime,displayCaptureDate,displayLocation,photoMetadataRows,buildIndex,findMoment,shuffleCandidates,createCandidateSelector} from '../dist/core.js';
 const photo=(pageid,minute,artist='A')=>({pageid,minute,artist,capture_date:'2020-01-01',camera_model:'Camera',relevance:'camera_gps_in_nyc',timezone_status:'assumed_local'});
 test('exact match and held minute select the same moment',()=>{const i=buildIndex([photo(1,121),photo(2,124)]);assert.equal(findMoment(i,121,'2026-10-23').minute,121);assert.equal(findMoment(i,123,'2026-10-23').minute,121);assert.equal(findMoment(i,123,'2026-10-23').lag,2);assert.equal(findMoment(i,124,'2026-10-23').minute,124);});
 test('initial visit across midnight chooses previous calendar day',()=>{const m=findMoment(buildIndex([photo(1,1438),photo(2,30)]),2,'2026-01-01');assert.equal(m.minute,1438);assert.equal(m.date,'2025-12-31');assert.equal(m.lag,4);});
@@ -48,11 +48,36 @@ test('capture dates match the card format without time-zone shifts',()=>{
 });
 
 test('back metadata uses labeled rows, recorded fields and license last',()=>{
-  const rows=photoMetadataRows({minute:1035,capture_date:'2015-05-30',description:'A city panorama.',borough:'Queens',credit:'Own work',artist:'King of Hearts',license:'CC BY-SA 4.0'});
-  assert.deepEqual(rows,[['Description','A city panorama.'],['Time','5:15 PM'],['Date','30 May 2015'],['Location','Queens'],['Source','Own work'],['Author','King of Hearts'],['License','CC BY-SA 4.0']]);
+  const rows=photoMetadataRows({minute:1035,capture_date:'2015-05-30',description:'A city panorama.',borough:'Queens',camera_location:{latitude:40.74,longitude:-73.95},location_address:{street:'10 Example Street',city:'New York',region:'NY',postal_code:'11101'},credit:'Own work',artist:'King of Hearts',license:'CC BY-SA 4.0'});
+  assert.deepEqual(rows,[['Description','A city panorama.'],['Time','5:15 PM'],['Date','30 May 2015'],['Location','10 Example Street\nNew York, NY 11101'],['Source','Own work'],['Author','King of Hearts'],['License','CC BY-SA 4.0']]);
 });
 test('missing metadata rows are omitted without losing midnight',()=>{
   assert.deepEqual(photoMetadataRows({}),[]);
   assert.deepEqual(photoMetadataRows({minute:0,description:'  ',credit:null,artist:'',license:'CC0'}),[['Time','12:00 AM'],['License','CC0']]);
   assert.deepEqual(photoMetadataRows({attribution:'Photographer credit'}),[['Author','Photographer credit']]);
+});
+
+test('location requires camera coordinates and a complete postal address, never a borough fallback',()=>{
+  const camera_location={latitude:40.758,longitude:-73.985};
+  const location_address={street:'1540 Broadway',city:'New York',region:'NY',postal_code:'10036'};
+  assert.equal(displayLocation({camera_location,location_address}),'1540 Broadway\nNew York, NY 10036');
+  for(const p of [{borough:'Manhattan'},{location_address},{camera_location},{camera_location,location_address:{...location_address,postal_code:''}},{camera_location:{latitude:NaN,longitude:-73},location_address}]){
+    assert.equal(displayLocation(p),'');
+    assert.ok(!photoMetadataRows(p).some(([name])=>name==='Location'));
+  }
+});
+
+test('enriched collection locations have camera coordinates, complete addresses and nearby matches',()=>{
+  const {photos}=JSON.parse(readFileSync(new URL('../dist/photos.json',import.meta.url)));
+  let resolved=0;
+  for(const p of photos){
+    if(!p.location_address){assert.equal(displayLocation(p),'');continue;}
+    resolved++;
+    assert.ok(p.camera_location&&Number.isFinite(p.camera_location.latitude)&&Number.isFinite(p.camera_location.longitude));
+    assert.ok(p.location_address.distance_m<=150);
+    assert.equal(p.location_address.provider,'NYC Planning GeoSearch');
+    assert.ok(displayLocation(p).includes(p.location_address.street));
+    assert.ok(displayLocation(p).endsWith(p.location_address.postal_code));
+  }
+  assert.ok(resolved>0);
 });

@@ -57,3 +57,25 @@ not static Figma image assets. Arial/Helvetica substitutes for the unavailable
 licensed Test Söhne font.
 
 Corner smoothing uses `figma-squircle` 1.1.0 (MIT), vendored in `dist/vendor/` with its license. The card silhouettes and image clipping paths use `cornerSmoothing: 0.6`. After upgrading the package, copy its `dist/index.js` and `LICENSE` into those vendor files.
+
+## Camera-location addresses
+
+Run `python3 scripts/enrich_locations.py` to enrich the saved collection. The script
+reads Commons `GPSLatitude` / `GPSLongitude` from `imageinfo.extmetadata`, which are
+the page's Camera location fields, then reverse-geocodes them with NYC Planning
+GeoSearch. It does not use the subject's location or infer coordinates from a borough.
+Requests run sequentially with a delay and are cached in `.cache/camera-addresses.json`;
+existing photo records also prevent repeated lookups. `--refresh` rechecks Commons
+coordinates while retaining the geocoding cache. No API key or runtime map request
+is required by the published website.
+
+Only nearby results (within 150 meters) with street, city, and ZIP code are shown.
+The address represents the nearest mapped address, not a verified camera doorstep.
+Missing coordinates, incomplete addresses, and distant matches omit the Location
+row. Public provenance, lookup date, coordinates, and distance are stored with each
+resolved address in `dist/photos.json`. Address attribution appears in full credits.
+
+Sources: [Commons camera locations](https://commons.wikimedia.org/wiki/Template:Location),
+[CommonsMetadata API](https://www.mediawiki.org/wiki/Extension:CommonsMetadata),
+[NYC Planning GeoSearch](https://geosearch.planninglabs.nyc/docs/).
+Run `python3 -m unittest discover -s test -p '*_test.py'` for ingestion checks.

@@ -37,6 +37,15 @@ export function displayCaptureDate(date){
   return month?`${month}/${match[3]}/${match[1]}`:date;
 }
 
+export function displayLocation(photo){
+  const camera=photo.camera_location,address=photo.location_address;
+  if(!camera||!Number.isFinite(camera.latitude)||!Number.isFinite(camera.longitude)||!address)return '';
+  const text=value=>typeof value==='string'?value.trim():'';
+  const street=text(address.street),city=text(address.city),zip=text(address.postal_code),region=text(address.region);
+  if(!street||!city||!/^\d{5}(?:-\d{4})?$/.test(zip))return '';
+  return `${street}\n${city}${region?', '+region:''} ${zip}`;
+}
+
 export function photoMetadataRows(photo){
   const present=value=>typeof value==='string'&&value.trim()?value.trim():'';
   const time=Number.isInteger(photo.minute)&&photo.minute>=0&&photo.minute<1440?displayTime(photo.minute):null;
@@ -49,7 +58,7 @@ export function photoMetadataRows(photo){
     ['Description',present(photo.description)],
     ['Time',time?`${time.clock} ${time.period}`:''],
     ['Date',formattedDate],
-    ['Location',present(photo.borough)],
+    ['Location',displayLocation(photo)],
     ['Source',present(photo.credit)],
     ['Author',author],
     ['License',present(photo.license)]

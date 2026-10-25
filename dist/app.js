@@ -4,7 +4,7 @@ import {createLinkDropTarget} from './drag-target.js';
 import {gridColumns,gridLayout,cardTransform} from './grid.js';
 import {captureCards,createViewMotion} from './view-motion.js';
 import {unseenCandidates,createDailyHistory} from './daily-selection.js';
-import {nyTime,displayTime,displayCaptureDate,photoMetadataRows,buildIndex,createCandidateSelector} from './core.js';
+import {nyTime,displayTime,displayCaptureDate,displayLocation,photoMetadataRows,buildIndex,createCandidateSelector} from './core.js';
 import {cleanTitle,stackLayout,imageDimensions,landingPose,entranceFrames,entranceTiming} from './stack.js';
 const $=id=>document.getElementById(id);
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
@@ -23,7 +23,7 @@ function updateCardLayers(){
 function viewport(){return {width:window.innerWidth,height:window.innerHeight};}
 function updateClock(){const state=nyTime(),t=displayTime(state.minute),text=`${t.clock} ${t.period}`;if(lastClock!==text){$('clock').textContent=text;$('clock').setAttribute('aria-label',`${text}, New York time`);lastClock=text;}return state;}
 function href(element,url){if(/^https:\/\//.test(url||''))element.href=url;else element.removeAttribute('href');}
-function showCredits(photo){$('credit-title').textContent=cleanTitle(photo.title);$('credit-author').textContent=[photo.attribution,photo.artist&&(!photo.attribution||!photo.attribution.includes(photo.artist))?photo.artist:'',photo.credit&&photo.credit!=='Own work'&&photo.credit!==photo.artist?photo.credit:''].filter(Boolean).join(' · ');const t=displayTime(photo.minute);$('credit-capture').textContent=`Recorded at ${t.clock} ${t.period} · ${photo.capture_date}`;$('credit-evidence').textContent=photo.timezone_status==='explicit_offset'?'Capture time includes a recorded time-zone offset.':'Camera time is assumed local to New York; the camera clock has not been independently verified.';$('credit-license').textContent=photo.license;href($('credit-license'),photo.license_url||photo.source_url);href($('credit-source'),photo.source_url);$('credits').showModal();}
+function showCredits(photo){const location=displayLocation(photo);$('credit-location').hidden=!location;$('credit-address').textContent=location.replace('\n',', ');$('credit-title').textContent=cleanTitle(photo.title);$('credit-author').textContent=[photo.attribution,photo.artist&&(!photo.attribution||!photo.attribution.includes(photo.artist))?photo.artist:'',photo.credit&&photo.credit!=='Own work'&&photo.credit!==photo.artist?photo.credit:''].filter(Boolean).join(' · ');const t=displayTime(photo.minute);$('credit-capture').textContent=`Recorded at ${t.clock} ${t.period} · ${photo.capture_date}`;$('credit-evidence').textContent=photo.timezone_status==='explicit_offset'?'Capture time includes a recorded time-zone offset.':'Camera time is assumed local to New York; the camera clock has not been independently verified.';$('credit-license').textContent=photo.license;href($('credit-license'),photo.license_url||photo.source_url);href($('credit-source'),photo.source_url);$('credits').showModal();}
 function homePose(entry){const v=viewport();return gridMode?{x:0,y:0,angle:0}:landingPose(entry.photo.pageid,entry.sequence,Math.min(v.width,v.height));}
 function layoutCards(){
   viewMotion.finish();
@@ -109,6 +109,7 @@ function printPhoto(photo,img){
     const term=document.createElement('span');term.className='metadata-label';term.textContent=name;
     const detail=document.createElement('span');detail.className='metadata-value';detail.textContent=value;
     if(name==='Description')detail.classList.add('metadata-description');
+    if(name==='Location')detail.title='Approximate nearby address from the recorded camera coordinates. Address data: NYC Planning GeoSearch.';
     metadata.append(term,detail);
   }
   if(metadata.childElementCount)backContent.append(metadata);
