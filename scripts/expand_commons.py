@@ -19,7 +19,7 @@ except ImportError:
     from enrich_locations import write_json
 ROOT=Path(__file__).resolve().parents[1]
 API='https://commons.wikimedia.org/w/api.php'
-UA='NewYorkMinute/1.0 (https://amandayehh.github.io/new-york-minute-clock/; bounded metadata research)'
+UA='PhotoClock/1.0 (https://amandayehh.github.io/photo-clock/; bounded metadata research)'
 BOROUGHS=['Manhattan','Brooklyn','Queens New York','Bronx','Staten Island']
 NEIGHBORHOODS=['Harlem','Chinatown Manhattan','Lower East Side','Washington Heights','East Village',
  'DUMBO Brooklyn','Williamsburg Brooklyn','Bushwick Brooklyn','Coney Island','Greenpoint Brooklyn',

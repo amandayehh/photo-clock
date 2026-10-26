@@ -10,7 +10,7 @@ import urllib.parse
 import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
-USER_AGENT = 'NewYorkMinuteClock/1.0 (https://new-york-minute-clock.elicit-9422.chatgpt.site)'
+USER_AGENT = 'PhotoClock/1.0 (https://amandayehh.github.io/photo-clock/)'
 COMMONS = 'https://commons.wikimedia.org/w/api.php'
 GEOCODER = 'https://geosearch.planninglabs.nyc/v2/reverse'
 MAX_DISTANCE_METERS = 150

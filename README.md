@@ -1,11 +1,11 @@
-# New York Minute
+# photo-clock
 
 A clock told through photographs of New York City, using recorded camera capture
 times from Wikimedia Commons. The live collection is a bounded research sample,
 not a census of Commons and not a live per-minute search.
 
-- [Clock](https://amandayehh.github.io/new-york-minute-clock/)
-- [Coverage map and source inventory](https://amandayehh.github.io/new-york-minute-clock/coverage.html)
+- [Clock](https://amandayehh.github.io/photo-clock/)
+- [Coverage map and source inventory](https://amandayehh.github.io/photo-clock/coverage.html)
 
 ## Run and verify
 

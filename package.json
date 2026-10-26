@@ -1,1 +1,1 @@
-{"name":"new-york-minute","private":true,"type":"module","scripts":{"test":"node --test test/*.test.js","dev":"python3 -m http.server 8780 --bind 127.0.0.1 --directory dist"},"dependencies":{"figma-squircle":"1.1.0"}}
+{"name":"photo-clock","private":true,"type":"module","scripts":{"test":"node --test test/*.test.js","dev":"python3 -m http.server 8780 --bind 127.0.0.1 --directory dist"},"dependencies":{"figma-squircle":"1.1.0"}}
