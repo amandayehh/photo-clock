@@ -32,3 +32,14 @@ test('content that fits and reduced motion do not animate',()=>{
     assert.equal(h.content.scrollTop,0);assert.equal(h.pending(),false);
   }
 });
+
+for(const font of [3,16])test(`rounded scrolling reaches the end at ${font}px metadata size`,()=>{
+  let stored=0,callback=null;
+  const content={scrollHeight:130,clientHeight:100,get scrollTop(){return stored;},set scrollTop(value){stored=Math.floor(value);}};
+  const controller=createBackScroll(content,{fontSize:()=>font,schedule:fn=>{callback=fn;return 1;},cancel:()=>{callback=null;}});
+  controller.setActive(true);
+  // Small grid fonts and high refresh rates must still accumulate movement.
+  for(let now=0;now<15000&&callback;now+=1000/120){const fn=callback;callback=null;fn(now);}
+  assert.equal(content.scrollTop,30);
+  assert.equal(callback,null);
+});
