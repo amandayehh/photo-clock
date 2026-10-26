@@ -31,7 +31,7 @@ a sleeping tab resets when it resumes. If every photograph has been shown, the c
 images try alternatives and are retried after a minute.
 
 Cards preserve equal photographic area across aspect ratios, stack in arrival
-order, and animate for one second. Stack renders only the latest ten cards; earlier
+order, and animate for one second. Stack renders only the latest eight cards; earlier
 cards release their rendering resources while their photo data stays available in Grid. Grid view chooses between three and eight columns from viewport width, targeting
 roughly 180 pixels per column including gutters to keep card sizes consistent. Hold still for 0.3 seconds to show metadata; releasing restores
 the front. Overflowing backs scroll to the end. Drag toward the Learn more edge

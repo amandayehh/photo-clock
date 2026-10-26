@@ -11,17 +11,17 @@ function setup(){
   });
   return {collection,live,disposed,peak:()=>peak};
 }
-test('a full day of arrivals never mounts more than ten stack cards',()=>{
+test('a full day of arrivals never mounts more than eight stack cards',()=>{
   const h=setup();let entries=[];
   for(let sequence=0;sequence<1440;sequence++){
     entries=h.collection.add({pageid:sequence},{loaded:true});
-    assert.equal(entries.length,Math.min(sequence+1,10));
+    assert.equal(entries.length,Math.min(sequence+1,8));
     assert.equal(h.live.size,entries.length);
     assert.equal(entries.at(-1).sequence,sequence);
   }
-  assert.equal(h.peak(),10);
-  assert.deepEqual(entries.map(e=>e.sequence),Array.from({length:10},(_,i)=>1430+i));
-  assert.equal(h.disposed.length,1430);
+  assert.equal(h.peak(),8);
+  assert.deepEqual(entries.map(e=>e.sequence),Array.from({length:8},(_,i)=>1432+i));
+  assert.equal(h.disposed.length,1432);
 });
 test('Grid restores the complete history in order and returning to Stack releases older cards',()=>{
   const h=setup();let stack;
@@ -29,14 +29,14 @@ test('Grid restores the complete history in order and returning to Stack release
   const grid=h.collection.setGrid(true);
   assert.equal(grid.length,25);assert.equal(h.live.size,25);
   assert.deepEqual(grid.map(e=>e.photo.pageid),Array.from({length:25},(_,i)=>i));
-  assert.deepEqual(grid.slice(-10),stack);
+  assert.deepEqual(grid.slice(-8),stack);
   // Restored cards use their archived photo data, not retained image objects.
-  assert.ok(grid.slice(0,15).every(e=>e.image===undefined));
+  assert.ok(grid.slice(0,17).every(e=>e.image===undefined));
   const withNew=h.collection.add({pageid:25});
   assert.equal(withNew.length,26);
   const restoredStack=h.collection.setGrid(false);
-  assert.equal(h.live.size,10);
-  assert.deepEqual(restoredStack,withNew.slice(-10));
+  assert.equal(h.live.size,8);
+  assert.deepEqual(restoredStack,withNew.slice(-8));
   assert.equal(h.collection.setGrid(true).length,26);
 });
 test('midnight clears rendered cards and archived history while preserving the selected view',()=>{
@@ -47,7 +47,7 @@ test('midnight clears rendered cards and archived history while preserving the s
     const first=h.collection.add({pageid:100});
     assert.equal(first.length,1);assert.equal(first[0].sequence,0);
     for(let i=1;i<12;i++)h.collection.add({pageid:100+i});
-    assert.equal(h.live.size,grid?12:10);
+    assert.equal(h.live.size,grid?12:8);
     assert.equal(h.collection.setGrid(true).length,12);
   }
 });

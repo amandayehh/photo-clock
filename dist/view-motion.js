@@ -9,17 +9,20 @@ export function viewFrames(from,to){
   ];
 }
 
-export function captureCards(entries){
-  return new Map(entries.map(entry=>{
+export function captureCards(entries,snapshots=new Map()){
+  for(const entry of entries){
+    // Keep live positions already captured, including interrupted animations.
+    if(snapshots.has(entry))continue;
     const card=entry.element,rect=card.getBoundingClientRect(),style=getComputedStyle(card);
     const matrix=new DOMMatrixReadOnly(style.transform==='none'?undefined:style.transform);
-    return [entry,{
+    snapshots.set(entry,{
       x:rect.left+rect.width/2,y:rect.top+rect.height/2,
       width:parseFloat(style.width)*Math.hypot(matrix.a,matrix.b),
       height:parseFloat(style.height)*Math.hypot(matrix.c,matrix.d),
       angle:Math.atan2(matrix.b,matrix.a)*180/Math.PI
-    }];
-  }));
+    });
+  }
+  return snapshots;
 }
 
 export function createViewMotion(){
@@ -34,13 +37,14 @@ export function createViewMotion(){
       item.entry.slot.style.height=item.slotHeight;
     }
     batch.layer.remove();
+    batch.onFinish?.();
   }
-  function play(entries,before){
-    if(!entries.length)return;
+  function play(entries,before,onFinish){
+    if(!entries.length){onFinish?.();return;}
     const after=captureCards(entries);
     const layer=document.createElement('div');layer.className='view-motion-layer';layer.inert=true;
     document.body.append(layer);
-    const batch={layer,items:[]};active=batch;
+    const batch={layer,items:[],onFinish};active=batch;
     // Reserve the final cells before lifting cards into an unclipped animation layer.
     // This also keeps scrolled grid coordinates fixed while switching to the stack.
     const slots=entries.map(entry=>({height:entry.slot.getBoundingClientRect().height,previous:entry.slot.style.height}));

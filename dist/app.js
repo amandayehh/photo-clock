@@ -2,10 +2,12 @@ import {applySmoothing,smoothSurface} from './smoothing.js';
 import {bindAboutPanel,collectionUpdate} from './about.js';
 import {createBackScroll} from './back-scroll.js';
 import {createCardCollection,stackCardLimit} from './card-collection.js';
+import {createCardExit,collapseFadeDelay} from './card-exit.js';
+import {applyCardLayers} from './card-layers.js';
 import {bindCardInteraction,releaseHeldCard} from './interaction.js';
 import {createLinkDropTarget} from './drag-target.js';
 import {gridColumns,gridLayout,gridImageDimensions,cardTransform} from './grid.js';
-import {captureCards,createViewMotion} from './view-motion.js';
+import {captureCards,createViewMotion,viewTiming} from './view-motion.js';
 import {unseenCandidates,createSessionHistory} from './daily-selection.js';
 import {nyTime,displayTime,displayCaptureDate,displayLocation,photoMetadataRows,buildIndex,createCandidateSelector} from './core.js';
 import {cleanTitle,stackLayout,stackImageDimensions,landingPose,entranceFrames,entranceTiming} from './stack.js';
@@ -25,19 +27,20 @@ let gridMode=false;
 const failed=new Set();
 let chooseCandidates=createCandidateSelector();
 const shownThisSession=createSessionHistory();
+const cardExits=createCardExit(entry=>{entry.slot.remove();entry.image.removeAttribute('src');});
 const cardCollection=createCardCollection({mount:createCard,unmount:disposeCard});
 let displayedKey='';
 function updateCardLayers(){
-  cards.forEach((entry,index)=>{entry.element.style.zIndex=String(entry.flipped?cards.length+1:index+1);});
+  applyCardLayers(cards);
 }
 function disposeCard(entry){
   entry.interaction.destroy();entry.animation?.cancel();entry.backScroll.destroy();
-  entry.slot.remove();entry.image.removeAttribute('src');
+  cardExits.retire(entry,!gridMode&&!reducedMotion.matches);
 }
 function syncCards(entries){
   cards=entries;
   const pile=$('pile');
-  // Restored Grid cards must precede the ten cards retained from the stack.
+  // Restored Grid cards must precede the eight cards retained from the stack.
   cards.forEach((entry,index)=>{if(pile.children[index]!==entry.slot)pile.insertBefore(entry.slot,pile.children[index]||null);});
   updateCardLayers();
 }
@@ -46,9 +49,10 @@ function resetCards(){
   generation++;busy=false;activeKey=displayedKey='';retryAt=0;failed.clear();
   chooseCandidates=createCandidateSelector();
   releaseHeldCard();viewMotion.finish();linkDropTarget.hide();
+  cardExits.finish();
   cardCollection.clear();
   cards=[];current=null;
-  $('pile').replaceChildren();$('pile').scrollTop=0;
+  $('pile').scrollTop=0;
   document.body.classList.remove('card-pressed');
   if($('credits').open)$('credits').close();
   $('status').hidden=true;$('retry').hidden=true;
@@ -83,17 +87,33 @@ function layoutCards(){
 }}
 function toggleView(){
   releaseHeldCard();
-  const before=reducedMotion.matches?null:captureCards(cards.slice(-stackCardLimit));
+  const before=reducedMotion.matches?null:captureCards(cards);
+  const bySequence=new Map(before?[...before].map(([entry,pose])=>[entry.sequence,pose]):[]);
   viewMotion.finish();
+  cardExits.finish();
+  if(!gridMode&&before){
+    // Restore archived cards in the stack layout before switching to Grid.
+    // Both layouts happen synchronously, so only the animation is painted.
+    syncCards(cardCollection.setGrid(true));
+    // Reuse in-flight positions if an interrupted collapse remounted older cards.
+    for(const entry of cards)if(bySequence.has(entry.sequence))before.set(entry,bySequence.get(entry.sequence));
+    layoutCards();
+    captureCards(cards,before);
+  }
   gridMode=!gridMode;
   document.body.classList.toggle('grid-mode',gridMode);
   $('view-toggle').setAttribute('aria-pressed',String(gridMode));
   for(const label of $('view-toggle').querySelectorAll('[data-view]'))label.classList.toggle('selected',label.dataset.view===(gridMode?'grid':'stacked'));
-  syncCards(cardCollection.setGrid(gridMode));
+  // Keep older cards mounted until their return-to-stack animation completes.
+  syncCards(cardCollection.setGrid(gridMode||Boolean(before)));
   for(const entry of cards)entry.position=null;
   $('pile').scrollTop=0;
   layoutCards();
-  if(before)viewMotion.play(cards.filter(entry=>before.has(entry)),before);
+  if(before){
+    const collapsing=!gridMode;
+    viewMotion.play(cards,before,()=>{if(collapsing)syncCards(cardCollection.setGrid(false));});
+    if(collapsing)for(const entry of cards.slice(0,-stackCardLimit))cardExits.start(entry,collapseFadeDelay(viewTiming.duration));
+  }
 }
 function animateCard(entry){
   if(!entry)return;
@@ -220,7 +240,7 @@ async function init(){updateClock();try{const response=await fetch('./photos.jso
 setInterval(()=>{updateClock();if(retryAt&&Date.now()>=retryAt&&!busy){retryAt=0;failed.clear();refresh(true);}else refresh();},1000);
 window.addEventListener('resize',()=>{releaseHeldCard();layoutCards();});
 window.addEventListener('blur',releaseHeldCard);
-reducedMotion.addEventListener('change',()=>{if(reducedMotion.matches)layoutCards();});
+reducedMotion.addEventListener('change',()=>{if(reducedMotion.matches){layoutCards();cardExits.finish();}});
 window.addEventListener('online',()=>{failed.clear();refresh(true);});
 // Refresh time on resume, but don't replace or reprint an unchanged held moment.
  document.addEventListener('visibilitychange',()=>{if(document.hidden)releaseHeldCard();else{updateClock();refresh();}});
