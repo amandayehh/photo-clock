@@ -53,7 +53,6 @@ function toggleView(){
   layoutCards();
   if(before)viewMotion.play(cards,before);
 }
-// Shared by automatic arrivals and the temporary, explicitly requested replay.
 function animateCard(entry){
   if(!entry)return;
   entry.animation?.cancel();
@@ -130,7 +129,6 @@ function printPhoto(photo,img){
     onDetails:()=>showCredits(photo)
   });
   cards.push(entry);updateCardLayers();current=photo;layoutCards();$('status').hidden=true;$('retry').hidden=true;
-  $('replay').hidden=false;
   if(!reducedMotion.matches)animateCard(entry);
 }
 function loadImage(url){return new Promise((resolve,reject)=>{const img=new Image();const timeout=setTimeout(()=>{img.onload=img.onerror=null;reject(new Error('Image timeout'));},10000);img.onload=()=>{clearTimeout(timeout);resolve(img);};img.onerror=()=>{clearTimeout(timeout);reject(new Error('Image unavailable'));};img.referrerPolicy='no-referrer';img.src=url;});}
@@ -173,7 +171,6 @@ window.addEventListener('online',()=>{failed.clear();refresh(true);});
 // Refresh time on resume, but don't replace or reprint an unchanged held moment.
  document.addEventListener('visibilitychange',()=>{if(document.hidden)releaseHeldCard();else{updateClock();refresh();}});
 $('retry').addEventListener('click',()=>{if(!index.size)init();else{failed.clear();refresh(true);}});
-$('replay').addEventListener('click',()=>{releaseHeldCard();viewMotion.finish();animateCard(cards.at(-1));});
 $('view-toggle').addEventListener('click',toggleView);
 $('close-credits').addEventListener('click',()=>$('credits').close());
 $('credits').addEventListener('click',event=>{if(event.target===$('credits')){const r=$('credits').getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)$('credits').close();}});
