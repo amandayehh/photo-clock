@@ -54,7 +54,7 @@ function layoutCards(){
     entry.pose=pose;
     const el=entry.element;el.style.width=`${size.width+layout.pad*2}px`;el.style.setProperty('--image-height',`${size.height}px`);el.style.setProperty('--pad',`${layout.pad}px`);el.style.setProperty('--gap',`${layout.gap}px`);el.style.setProperty('--radius',`${layout.radius}px`);
   // Titles keep the same size and truncate to one line on the front.
-  el.style.setProperty('--title-size',`${layout.titleSize}px`);el.style.setProperty('--stamp-size',`${layout.stampSize}px`);el.style.transform=cardTransform(pose,gridMode);applySmoothing(entry,size,layout);
+  el.style.setProperty('--title-size',`${layout.titleSize}px`);el.style.setProperty('--stamp-size',`${layout.stampSize}px`);el.style.transform=cardTransform(pose,gridMode);applySmoothing(entry,size,layout);entry.backScroll.refresh();
 }}
 function toggleView(){
   releaseHeldCard();
@@ -127,10 +127,13 @@ function printPhoto(photo,img){
     metadata.append(term,detail);
   }
   if(metadata.childElementCount)backContent.append(metadata);
-  const backScroll=createBackScroll(backContent,{reducedMotion:()=>reducedMotion.matches,fontSize:()=>parseFloat(getComputedStyle(metadata).fontSize)||16});
+  const backScroll=createBackScroll(backContent,{
+    reducedMotion:()=>reducedMotion.matches,fontSize:()=>parseFloat(getComputedStyle(metadata).fontSize)||16,
+    onEdges:edges=>{backContent.classList.toggle('fade-top',edges.top);backContent.classList.toggle('fade-bottom',edges.bottom);}
+  });
   const slot=document.createElement('div');slot.className='photo-slot';
   flipper.append(front,back);card.append(flipper);slot.append(card);$('pile').append(slot);
-  const entry={element:card,slot,front,image:img,photo,title,ratio:photo.width/photo.height,sequence:cards.length,flipped:false,pose:null,position:null,animation:null};
+  const entry={element:card,slot,front,image:img,backScroll,photo,title,ratio:photo.width/photo.height,sequence:cards.length,flipped:false,pose:null,position:null,animation:null};
   bindCardInteraction(card,{
     onPress:pressed=>{document.body.classList.toggle('card-pressed',pressed);card.classList.toggle('pressed',pressed);},
     onLift:()=>{entry.animation?.cancel();entry.animation=null;card.classList.remove('arriving');},
