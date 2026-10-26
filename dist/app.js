@@ -1,4 +1,5 @@
 import {applySmoothing} from './smoothing.js';
+import {bindAboutPanel,collectionUpdate} from './about.js';
 import {createBackScroll} from './back-scroll.js';
 import {bindCardInteraction,releaseHeldCard} from './interaction.js';
 import {createLinkDropTarget} from './drag-target.js';
@@ -8,6 +9,7 @@ import {unseenCandidates,createSessionHistory} from './daily-selection.js';
 import {nyTime,displayTime,displayCaptureDate,displayLocation,photoMetadataRows,buildIndex,createCandidateSelector} from './core.js';
 import {cleanTitle,stackLayout,imageDimensions,landingPose,entranceFrames,entranceTiming} from './stack.js';
 const $=id=>document.getElementById(id);
+bindAboutPanel($('about-toggle'),$('about-panel'),document);
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
 const viewMotion=createViewMotion();
 const linkDropTarget=createLinkDropTarget($('link-drop-target'),url=>window.open(url,'_blank','noopener,noreferrer'));
@@ -164,7 +166,7 @@ async function refresh(force=false){
     $('status').hidden=false;$('retry').hidden=!eligible;
   }
 }
-async function init(){updateClock();try{const response=await fetch('./photos.json');if(!response.ok)throw new Error('Collection unavailable');const data=await response.json();photos=data.photos;index=buildIndex(photos);if(!index.size)throw new Error('Empty collection');await refresh();}catch{$('status').textContent='The collection could not load.';$('status').hidden=false;$('retry').hidden=false;}}
+async function init(){updateClock();try{const response=await fetch('./photos.json');if(!response.ok)throw new Error('Collection unavailable');const data=await response.json();const updated=collectionUpdate(data);if(updated){$('collection-updated').textContent=updated.text;$('collection-updated').dateTime=updated.datetime;$('about-updated').hidden=false;}photos=data.photos;index=buildIndex(photos);if(!index.size)throw new Error('Empty collection');await refresh();}catch{$('status').textContent='The collection could not load.';$('status').hidden=false;$('retry').hidden=false;}}
 setInterval(()=>{updateClock();if(retryAt&&Date.now()>=retryAt&&!busy){retryAt=0;failed.clear();refresh(true);}else refresh();},1000);
 window.addEventListener('resize',()=>{releaseHeldCard();layoutCards();});
 window.addEventListener('blur',releaseHeldCard);

@@ -37,6 +37,11 @@ and release to open the original Commons page. Space holds details, arrow keys
 move the card, and Enter opens full credits. Reduced-motion preferences disable
 automatic animation. Suisse Int'l Regular is used for typography.
 
+The top-right help button opens the project description, Commons source link,
+and latest recorded collection update in New York time. It closes on a second
+click, an outside click, or Escape. Its white SVG uses the supplied
+[Chunk circle-question icon](https://www.figma.com/design/UCamxllZg0jl4xETAbcafG/Chunk-Icons--Community-?node-id=54-53918), stored locally.
+
 Corner smoothing uses the vendored MIT-licensed `figma-squircle` 1.1.0.
 
 ## Monthly collection maintenance
