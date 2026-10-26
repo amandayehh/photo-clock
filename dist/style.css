@@ -32,8 +32,8 @@ body.card-pressed,body.card-pressed *{cursor:grabbing!important}
 
 .card-back{gap:calc(var(--pad) * 2)}
 /* At the reference 9px metadata font: 300px maximum width and 8px gaps. */
-.card-metadata{display:grid;grid-template-columns:minmax(0,23%) minmax(0,1fr);gap:calc(8em / 9);margin-top:auto;width:100%;max-width:calc(300em / 9);align-self:flex-start;font-size:var(--stamp-size);font-weight:400;line-height:1.5;text-align:left}
-.metadata-label{color:#999}.metadata-value{color:#282828;white-space:pre-line;overflow-wrap:anywhere}
+.card-metadata{display:grid;grid-template-columns:minmax(max-content,23%) minmax(0,1fr);gap:calc(8em / 9);margin-top:auto;width:100%;max-width:calc(300em / 9);align-self:flex-start;font-size:var(--stamp-size);font-weight:400;line-height:1.5;text-align:left}
+.metadata-label{color:#999;white-space:nowrap;overflow-wrap:normal}.metadata-value{color:#282828;white-space:pre-line;overflow-wrap:anywhere}
 .metadata-description{display:block}
 
 .card-stamp,.card-metadata{letter-spacing:.01em}

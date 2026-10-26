@@ -43,7 +43,8 @@ export function displayLocation(photo){
   const text=value=>typeof value==='string'?value.trim():'';
   const street=text(address.street),city=text(address.city),zip=text(address.postal_code),region=text(address.region);
   if(!street||!city||!/^\d{5}(?:-\d{4})?$/.test(zip))return '';
-  return `${street}\n${city}${region?', '+region:''} ${zip}`;
+  const titleCase=value=>value.toLowerCase().replace(/(^|[\s-])([a-z])/g,(_,space,letter)=>space+letter.toUpperCase());
+  return `${titleCase(street)}\n${titleCase(city)}${region?', '+region.toUpperCase():''} ${zip}`;
 }
 
 export function photoMetadataRows(photo){

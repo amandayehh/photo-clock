@@ -59,7 +59,7 @@ test('missing metadata rows are omitted without losing midnight',()=>{
 
 test('location requires camera coordinates and a complete postal address, never a borough fallback',()=>{
   const camera_location={latitude:40.758,longitude:-73.985};
-  const location_address={street:'1540 Broadway',city:'New York',region:'NY',postal_code:'10036'};
+  const location_address={street:'1540 BROADWAY',city:'NEW YORK',region:'ny',postal_code:'10036'};
   assert.equal(displayLocation({camera_location,location_address}),'1540 Broadway\nNew York, NY 10036');
   for(const p of [{borough:'Manhattan'},{location_address},{camera_location},{camera_location,location_address:{...location_address,postal_code:''}},{camera_location:{latitude:NaN,longitude:-73},location_address}]){
     assert.equal(displayLocation(p),'');
@@ -76,7 +76,7 @@ test('enriched collection locations have camera coordinates, complete addresses 
     assert.ok(p.camera_location&&Number.isFinite(p.camera_location.latitude)&&Number.isFinite(p.camera_location.longitude));
     assert.ok(p.location_address.distance_m<=150);
     assert.equal(p.location_address.provider,'NYC Planning GeoSearch');
-    assert.ok(displayLocation(p).includes(p.location_address.street));
+    assert.ok(displayLocation(p).toLowerCase().includes(p.location_address.street.toLowerCase()));
     assert.ok(displayLocation(p).endsWith(p.location_address.postal_code));
   }
   assert.ok(resolved>0);
