@@ -127,7 +127,7 @@ function printPhoto(photo,img){
   flipper.append(front,back);card.append(flipper);slot.append(card);$('pile').append(slot);
   const entry={element:card,slot,front,image:img,photo,title,ratio:photo.width/photo.height,sequence:cards.length,flipped:false,pose:null,position:null,animation:null};
   bindCardInteraction(card,{
-    onPress:pressed=>document.body.classList.toggle('card-pressed',pressed),
+    onPress:pressed=>{document.body.classList.toggle('card-pressed',pressed);card.classList.toggle('pressed',pressed);},
     onLift:()=>{entry.animation?.cancel();entry.animation=null;card.classList.remove('arriving');},
     onMove:(dx,dy)=>{
       const v=viewport();
