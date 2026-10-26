@@ -1,33 +1,39 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {gridColumns,gridLayout,cardTransform} from '../dist/grid.js';
-import {settledTransform,imageDimensions} from '../dist/stack.js';
+import {gridColumns,gridLayout,gridImageDimensions,cardTransform} from '../dist/grid.js';
+import {settledTransform} from '../dist/stack.js';
 
 test('grid uses every column count from three to eight as available width increases',()=>{
   for(const [width,columns] of [[320,3],[390,3],[629,3],[630,4],[768,4],[820,5],[1024,6],[1200,7],[1350,8],[1440,8],[2560,8]]){
     assert.equal(gridColumns(width),columns);
   }
 });
-test('grid photos have equal areas, fit their columns and retain their aspect ratios',()=>{
-  const ratios=[.527,1,1.5,3.612];
+test('ordinary grid photos share an area while fitting column width and available height',()=>{
   for(const cell of [60,76,120,180,300]){
-    const layout=gridLayout(cell,ratios);
-    for(const ratio of ratios){
-      const size=imageDimensions(layout.area,ratio);
-      assert.ok(size.width+layout.pad*2<=cell+1e-8);
-      assert.ok(Math.abs(size.width/size.height-ratio)<1e-8);
-      assert.ok(Math.abs(size.width*size.height-layout.area)<1e-8);
-      assert.ok(size.height>0&&layout.radius>0);
+    for(const height of [130,600]){
+      const layout=gridLayout(cell,height);
+      for(const ratio of [.5,.527,1,1.5,2]){
+        const size=gridImageDimensions(layout,ratio);
+        assert.ok(size.width+layout.pad*2<=cell+1e-8);
+        assert.ok(size.height+2*layout.pad+2*layout.gap+1.15*(layout.titleSize+layout.stampSize)<=height+1e-8);
+        assert.ok(Math.abs(size.width/size.height-ratio)<1e-8);
+        assert.ok(Math.abs(size.width*size.height-layout.area)<1e-8);
+      }
     }
   }
 });
-test('grid layout handles empty and portrait-only collections and refits when a panorama arrives',()=>{
-  for(const ratios of [[],[.5],[1],[.5,1,5]]){
-    const layout=gridLayout(150,ratios);
-    assert.ok(Number.isFinite(layout.area)&&layout.area>0);
-    for(const ratio of ratios)assert.ok(imageDimensions(layout.area,ratio).width+layout.pad*2<=150+1e-8);
+test('grid outliers fit individually without shrinking ordinary photos',()=>{
+  const layout=gridLayout(150,400),area=layout.area;
+  for(const ratio of [.1,.3,3.612,7,20]){
+    const size=gridImageDimensions(layout,ratio);
+    assert.ok(size.width<=layout.imageWidth+1e-8);
+    assert.ok(size.height<=layout.imageHeight+1e-8);
+    assert.ok(size.width*size.height<=area+1e-8);
+    assert.ok(Math.abs(size.width/size.height-ratio)<1e-8);
+    assert.equal(layout.area,area);
   }
-  assert.ok(gridLayout(150,[.5,1,5]).area<gridLayout(150,[.5,1]).area);
+  const square=gridImageDimensions(layout,1);
+  assert.equal(square.width*square.height,area);
 });
 test('grid cards return to their own cell; stacked cards retain their original positioning',()=>{
   assert.equal(cardTransform({x:0,y:0,angle:0},true),'translate(0px, 0px) rotate(0deg)');

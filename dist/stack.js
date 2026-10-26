@@ -5,22 +5,41 @@ export function cleanTitle(title){
   while(/\([^()]*\)/.test(value))value=value.replace(/\([^()]*\)/g,' ');
   return value.replace(/\s+/g,' ').trim()||'New York';
 }
-export function stackLayout(width,height,ratios){
+// Bounds describe the stage between the toolbar and clock, inside the shared page padding.
+export function stackLayout(width,height,bounds){
   const short=Math.min(width,height),pad=Math.max(7,Math.min(20,short*10/544));
   const titleSize=Math.max(14,Math.min(40,short*20/544));
   const stampSize=Math.max(9,titleSize*.45);
-  const gap=pad*.75,theta=3*Math.PI/180;
-  const shapes=ratios.length?ratios:[1];
-  // One common fit factor preserves equal image area even on narrow screens.
-  // Gently enlarge compact layouts, tapering back to the 50% desktop reference.
-  const compact=Math.max(0,Math.min(1,(900-short)/500));
-  const fits=side=>shapes.every(r=>{
-    const w=side*Math.sqrt(r)+2*pad,h=side/Math.sqrt(r)+2*pad+2*gap+titleSize*1.15+stampSize*1.15;
-    return w*Math.cos(theta)+h*Math.sin(theta)<=width*(.92+.04*compact) && h*Math.cos(theta)+w*Math.sin(theta)<=height*.84;
-  });
-  let low=0,high=short*(.5+.06*compact);
-  if(!fits(high)){for(let n=0;n<32;n++){const middle=(low+high)/2;if(fits(middle))low=middle;else high=middle;}}
-  return {side:high,area:high*high,pad,gap,titleSize,stampSize,radius:pad*.8};
+  const clockHeight=Math.max(20,Math.min(40,short*.0368))*1.2;
+  const stage=bounds||{width:width-40,height:height-80-35.6-clockHeight};
+  const poseScale=Math.min(1.6,short/544);
+  // Keep the tilted silhouette and landing offsets inside the stage, with room for its shadow.
+  const shadowRoom=16;
+  const layout={pad,gap:pad*.75,titleSize,stampSize,radius:pad*.8,
+    maxWidth:Math.max(0,stage.width-2*(6*poseScale+shadowRoom)),
+    maxHeight:Math.max(0,stage.height-2*(4*poseScale+shadowRoom))};
+  // Every ordinary proportion shares the largest area that fits both ends of 1:2–2:1.
+  const side=Math.min(fittingSide(layout,.5),fittingSide(layout,2));
+  return {...layout,side,area:side*side};
+}
+export function rotatedCardBounds(layout,side,ratio){
+  const w=side*Math.sqrt(ratio)+2*layout.pad;
+  const h=side/Math.sqrt(ratio)+2*layout.pad+2*layout.gap+1.15*(layout.titleSize+layout.stampSize);
+  const theta=3*Math.PI/180;
+  const xAngle=Math.min(theta,Math.atan2(h,w)),yAngle=Math.min(theta,Math.atan2(w,h));
+  return {width:w*Math.cos(xAngle)+h*Math.sin(xAngle),height:h*Math.cos(yAngle)+w*Math.sin(yAngle)};
+}
+function fittingSide(layout,ratio){
+  let low=0,high=Math.max(layout.maxWidth,layout.maxHeight);
+  for(let n=0;n<40;n++){
+    const side=(low+high)/2,bounds=rotatedCardBounds(layout,side,ratio);
+    if(bounds.width<=layout.maxWidth&&bounds.height<=layout.maxHeight)low=side;else high=side;
+  }
+  return low;
+}
+export function stackImageDimensions(layout,ratio){
+  const side=ratio<.5||ratio>2?Math.min(layout.side,fittingSide(layout,ratio)):layout.side;
+  return imageDimensions(side*side,ratio);
 }
 export function imageDimensions(area,ratio){return {width:Math.sqrt(area*ratio),height:Math.sqrt(area/ratio)};}
 export function landingPose(id,sequence,short){

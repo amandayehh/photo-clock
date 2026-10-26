@@ -3,15 +3,15 @@ import {bindAboutPanel,collectionUpdate} from './about.js';
 import {createBackScroll} from './back-scroll.js';
 import {bindCardInteraction,releaseHeldCard} from './interaction.js';
 import {createLinkDropTarget} from './drag-target.js';
-import {gridColumns,gridLayout,cardTransform} from './grid.js';
+import {gridColumns,gridLayout,gridImageDimensions,cardTransform} from './grid.js';
 import {captureCards,createViewMotion} from './view-motion.js';
 import {unseenCandidates,createSessionHistory} from './daily-selection.js';
 import {nyTime,displayTime,displayCaptureDate,displayLocation,photoMetadataRows,buildIndex,createCandidateSelector} from './core.js';
-import {cleanTitle,stackLayout,imageDimensions,landingPose,entranceFrames,entranceTiming} from './stack.js';
+import {cleanTitle,stackLayout,stackImageDimensions,landingPose,entranceFrames,entranceTiming} from './stack.js';
 const $=id=>document.getElementById(id);
 function updateAboutSurface(){
   const panel=$('about-panel');if(panel.hidden)return;
-  const radius=parseFloat(getComputedStyle(document.body).getPropertyValue('--photo-radius'))||stackLayout(window.innerWidth,window.innerHeight,[]).radius;
+  const radius=parseFloat(getComputedStyle(document.body).getPropertyValue('--photo-radius'))||stackLayout(window.innerWidth,window.innerHeight).radius;
   panel.style.setProperty('--panel-surface',smoothSurface(panel.offsetWidth,panel.offsetHeight,radius,'#282828'));
 }
 bindAboutPanel($('about-toggle'),$('about-panel'),document,updateAboutSurface);
@@ -33,19 +33,24 @@ function updateClock(){const state=nyTime(),t=displayTime(state.minute),text=`${
 function href(element,url){if(/^https:\/\//.test(url||''))element.href=url;else element.removeAttribute('href');}
 function showCredits(photo){const location=displayLocation(photo);$('credit-location').hidden=!location;$('credit-address').textContent=location.replace('\n',', ');$('credit-title').textContent=cleanTitle(photo.title);$('credit-author').textContent=[photo.attribution,photo.artist&&(!photo.attribution||!photo.attribution.includes(photo.artist))?photo.artist:'',photo.credit&&photo.credit!=='Own work'&&photo.credit!==photo.artist?photo.credit:''].filter(Boolean).join(' · ');const t=displayTime(photo.minute);$('credit-capture').textContent=`Recorded at ${t.clock} ${t.period} · ${photo.capture_date}`;$('credit-evidence').textContent=photo.timezone_status==='explicit_offset'?'Capture time includes a recorded time-zone offset.':'Camera time is assumed local to New York; the camera clock has not been independently verified.';$('credit-license').textContent=photo.license;href($('credit-license'),photo.license_url||photo.source_url);href($('credit-source'),photo.source_url);$('credits').showModal();}
 function homePose(entry){const v=viewport();return gridMode?{x:0,y:0,angle:0}:landingPose(entry.photo.pageid,entry.sequence,Math.min(v.width,v.height));}
+function constrainStackPosition(pose){
+  const v=viewport(),stage=$('pile').getBoundingClientRect();
+  const cx=stage.left+stage.width/2,cy=stage.top+stage.height/2;
+  return {...pose,x:Math.max(32-cx,Math.min(v.width-32-cx,pose.x)),y:Math.max(32-cy,Math.min(v.height-32-cy,pose.y))};
+}
 function layoutCards(){
   viewMotion.finish();
-  const v=viewport(),stack=stackLayout(v.width,v.height,photos.map(p=>p.width/p.height));
+  const v=viewport(),stack=stackLayout(v.width,v.height,$('pile').getBoundingClientRect());
   $('pile').style.setProperty('--grid-columns',gridColumns(v.width));
   const widths=gridMode?cards.map(entry=>entry.slot.getBoundingClientRect().width):[];
-  const layout=gridMode?gridLayout(widths.length?Math.min(...widths):1,cards.map(entry=>entry.ratio)):stack;
+  const layout=gridMode?gridLayout(widths.length?Math.min(...widths):1,$('pile').clientHeight):stack;
   document.body.style.setProperty('--photo-radius',`${layout.radius}px`);
   updateAboutSurface();
   for(const entry of cards){
     entry.animation?.cancel();entry.animation=null;entry.element.classList.remove('arriving');
-    const size=imageDimensions(layout.area,entry.ratio);
-    const pose=entry.position||homePose(entry);
-    if(entry.position&&!gridMode){pose.x=Math.max(-v.width/2+32,Math.min(v.width/2-32,pose.x));pose.y=Math.max(-v.height/2+32,Math.min(v.height/2-32,pose.y));}
+    const size=gridMode?gridImageDimensions(layout,entry.ratio):stackImageDimensions(layout,entry.ratio);
+    let pose=entry.position||homePose(entry);
+    if(entry.position&&!gridMode){pose=constrainStackPosition(pose);entry.position=pose;}
     entry.pose=pose;
     const el=entry.element;el.style.width=`${size.width+layout.pad*2}px`;el.style.setProperty('--image-height',`${size.height}px`);el.style.setProperty('--pad',`${layout.pad}px`);el.style.setProperty('--gap',`${layout.gap}px`);el.style.setProperty('--radius',`${layout.radius}px`);
   // Titles keep the same size and truncate to one line on the front.
@@ -130,9 +135,9 @@ function printPhoto(photo,img){
     onPress:pressed=>{document.body.classList.toggle('card-pressed',pressed);card.classList.toggle('pressed',pressed);},
     onLift:()=>{entry.animation?.cancel();entry.animation=null;card.classList.remove('arriving');},
     onMove:(dx,dy)=>{
-      const v=viewport();
       // Keep the card's center within the window while dragging.
-      entry.position=gridMode?{...entry.pose,x:entry.pose.x+dx,y:entry.pose.y+dy}:{...entry.pose,x:Math.max(-v.width/2+32,Math.min(v.width/2-32,entry.pose.x+dx)),y:Math.max(-v.height/2+32,Math.min(v.height/2-32,entry.pose.y+dy))};
+      const moved={...entry.pose,x:entry.pose.x+dx,y:entry.pose.y+dy};
+      entry.position=gridMode?moved:constrainStackPosition(moved);
       entry.pose=entry.position;card.style.transform=cardTransform(entry.pose,gridMode);
     },
     onDrag:point=>linkDropTarget.show(point),

@@ -1,33 +1,53 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {stackLayout,imageDimensions,cleanTitle,landingPose,entranceFrames,entranceTiming,settledTransform} from '../dist/stack.js';
+import {stackLayout,stackImageDimensions,rotatedCardBounds,cleanTitle,landingPose,entranceFrames,entranceTiming,settledTransform} from '../dist/stack.js';
 
 test('titles omit file prefix, extension, and nested parenthetical text',()=>{
   assert.equal(cleanTitle('File:Midtown (Manhattan) (NYC (2024)).jpg'),'Midtown');
   assert.equal(cleanTitle('File:Central_Park (123456) at dusk.JPG'),'Central Park at dusk');
   assert.equal(cleanTitle('File:Meadows.jpg'),'Meadows');
 });
-test('landscape, portrait and square photos have identical surface area',()=>{
-  for(const [w,h] of [[861,544],[1722,1088],[390,844],[844,390]]){
-    const layout=stackLayout(w,h,[.527,1,1.5,3.612]);
-    for(const ratio of [.527,1,1.5,3.612]){
-      const d=imageDimensions(layout.area,ratio);
+const screens=[[320,568],[390,844],[844,390],[768,1024],[800,800],[1440,900],[1722,1088],[2560,1080]];
+test('ordinary photos share one maximal area and fit in both viewport dimensions',()=>{
+  for(const [w,h] of screens){
+    const layout=stackLayout(w,h);
+    for(const ratio of [.5,.527,2/3,1,1.5,2]){
+      const d=stackImageDimensions(layout,ratio);
       assert.ok(Math.abs(d.width*d.height-layout.area)<1e-6);
       assert.ok(Math.abs(d.width/d.height-ratio)<1e-10);
+      const bounds=rotatedCardBounds(layout,layout.side,ratio);
+      assert.ok(bounds.width<=layout.maxWidth+1e-6);
+      assert.ok(bounds.height<=layout.maxHeight+1e-6);
     }
-    assert.ok(layout.side<=Math.min(w,h)*.56+1e-6);
-    for(const ratio of [.527,1,1.5,3.612]){
-      const size=imageDimensions(layout.area,ratio),theta=3*Math.PI/180;
-      const cardWidth=size.width+2*layout.pad;
-      const cardHeight=size.height+2*layout.pad+2*layout.gap+1.15*(layout.titleSize+layout.stampSize);
-      assert.ok(cardWidth*Math.cos(theta)+cardHeight*Math.sin(theta)<=w*.96+1e-6);
-      assert.ok(cardHeight*Math.cos(theta)+cardWidth*Math.sin(theta)<=h*.84+1e-6);
-    }
+    // Increasing the common area would breach a boundary for at least one ordinary shape.
+    assert.ok([.5,2].some(r=>{
+      const b=rotatedCardBounds(layout,layout.side+.01,r);
+      return b.width>layout.maxWidth||b.height>layout.maxHeight;
+    }));
   }
 });
-test('reference area is a square with half the shorter viewport dimension',()=>{
-  const layout=stackLayout(1722,1088,[1,1.5]);
-  assert.equal(layout.area,544**2);
+test('extreme photos fit individually without changing the ordinary shared area',()=>{
+  for(const [w,h] of screens){
+    const layout=stackLayout(w,h),original=layout.area;
+    for(const ratio of [.1,.25,.49,2.01,3.612,7,20]){
+      const d=stackImageDimensions(layout,ratio),side=Math.sqrt(d.width*d.height);
+      const b=rotatedCardBounds(layout,side,ratio);
+      assert.ok(b.width<=layout.maxWidth+1e-6);
+      assert.ok(b.height<=layout.maxHeight+1e-6);
+      assert.ok(d.width*d.height<=original+1e-6);
+      assert.ok(Math.abs(d.width/d.height-ratio)<1e-10);
+      assert.equal(layout.area,original);
+    }
+    assert.equal(stackImageDimensions(layout,1).width,layout.side);
+  }
+});
+test('stack responds to width and height and respects measured stage bounds',()=>{
+  assert.ok(stackLayout(500,900).area>stackLayout(390,900).area);
+  assert.ok(stackLayout(1440,1080).area>stackLayout(1440,700).area);
+  const regular=stackLayout(390,844);
+  const inset=stackLayout(390,844,{width:310,height:600});
+  assert.ok(inset.area<regular.area);
+  assert.ok(inset.maxWidth<310&&inset.maxHeight<600);
 });
 test('entrance begins fully above the viewport, remains opaque, and lands at its final pose',()=>{
   const pose=landingPose(12,1,544),frames=entranceFrames(pose,544,330);
