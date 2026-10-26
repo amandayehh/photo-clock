@@ -80,3 +80,13 @@ Sources: [Commons camera locations](https://commons.wikimedia.org/wiki/Template:
 [CommonsMetadata API](https://www.mediawiki.org/wiki/Extension:CommonsMetadata),
 [NYC Planning GeoSearch](https://geosearch.planninglabs.nyc/docs/).
 Run `python3 -m unittest discover -s test -p '*_test.py'` for ingestion checks.
+
+## GitHub Pages
+
+Repository: https://github.com/amandayehh/new-york-minute-clock
+
+Live site: https://amandayehh.github.io/new-york-minute-clock/
+
+Push to `main` to run the test suite and publish `dist/` through the GitHub
+Pages workflow. Asset and data URLs are relative so the site works under this
+repository path. In repository Settings → Pages, the source is GitHub Actions.
