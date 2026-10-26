@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import {gridColumns,gridLayout,cardTransform} from '../dist/grid.js';
 import {settledTransform,imageDimensions} from '../dist/stack.js';
 
-test('grid switches between three, six and eight columns at responsive breakpoints',()=>{
-  for(const [width,columns] of [[320,3],[390,3],[767,3],[768,6],[820,6],[1023,6],[1024,8],[1440,8],[2560,8]]){
+test('grid uses every column count from three to eight as available width increases',()=>{
+  for(const [width,columns] of [[320,3],[390,3],[629,3],[630,4],[768,4],[820,5],[1024,6],[1200,7],[1350,8],[1440,8],[2560,8]]){
     assert.equal(gridColumns(width),columns);
   }
 });

@@ -1,4 +1,5 @@
-export function gridColumns(width){return width>=1024?8:width>=768?6:3;}
+// Aim for about 180px per column including gutters, with 3–8 columns.
+export function gridColumns(width){return Math.max(3,Math.min(8,Math.round(width/180)));}
 export function gridLayout(cellWidth,ratios){
   const pad=Math.max(3,Math.min(10,cellWidth*.045));
   const available=Math.max(1,cellWidth-2*pad);
