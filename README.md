@@ -30,7 +30,7 @@ on refresh. If every photograph has been shown, the current one stays. Failed
 images try alternatives and are retried after a minute.
 
 Cards preserve equal photographic area across aspect ratios, stack in arrival
-order, and animate for one second. Grid view uses four, six or eight columns by
+order, and animate for one second. Grid view uses three, six or eight columns by
 viewport width. Hold still for 0.6 seconds to show metadata; releasing restores
 the front. Overflowing backs scroll to the end. Drag toward the Learn more edge
 and release to open the original Commons page. Space holds details, arrow keys
