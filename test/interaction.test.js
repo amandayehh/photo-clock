@@ -12,10 +12,20 @@ class Card extends EventTarget{
 }
 function setup(callbacks={}){
   const card=new Card(),state={held:false,pressed:false,x:0,y:0,lifts:0,details:0};
-  bindCardInteraction(card,{onPress:pressed=>state.pressed=pressed,onLift:()=>state.lifts++,onMove:(x,y)=>{state.x+=x;state.y+=y;},onFlip:held=>state.held=held,onDetails:()=>state.details++,...callbacks});
-  return {card,state};
+  const interaction=bindCardInteraction(card,{onPress:pressed=>state.pressed=pressed,onLift:()=>state.lifts++,onMove:(x,y)=>{state.x+=x;state.y+=y;},onFlip:held=>state.held=held,onDetails:()=>state.details++,...callbacks});
+  return {card,state,interaction};
 }
 const down={button:0,isPrimary:true,pointerId:1,clientX:100,clientY:100};
+test('removing a pressed card cancels its pending flip, capture and event listeners',t=>{
+  t.mock.timers.enable({apis:['setTimeout']});
+  const {card,state,interaction}=setup();card.send('pointerdown',down);
+  interaction.destroy();t.mock.timers.tick(1000);
+  assert.equal(state.held,false);assert.equal(state.pressed,false);
+  assert.equal(card.hasPointerCapture(1),false);
+  card.send('pointerdown',down);card.send('keydown',{code:'Space',key:' '});
+  t.mock.timers.tick(1000);
+  assert.equal(state.lifts,1);assert.equal(state.held,false);
+});
 test('drag starts immediately and cancels the delayed flip',t=>{
   t.mock.timers.enable({apis:['setTimeout']});
   const {card,state}=setup();

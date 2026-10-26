@@ -1,6 +1,7 @@
 import {applySmoothing,smoothSurface} from './smoothing.js';
 import {bindAboutPanel,collectionUpdate} from './about.js';
 import {createBackScroll} from './back-scroll.js';
+import {createCardCollection,stackCardLimit} from './card-collection.js';
 import {bindCardInteraction,releaseHeldCard} from './interaction.js';
 import {createLinkDropTarget} from './drag-target.js';
 import {gridColumns,gridLayout,gridImageDimensions,cardTransform} from './grid.js';
@@ -24,16 +25,28 @@ let gridMode=false;
 const failed=new Set();
 let chooseCandidates=createCandidateSelector();
 const shownThisSession=createSessionHistory();
+const cardCollection=createCardCollection({mount:createCard,unmount:disposeCard});
 let displayedKey='';
 function updateCardLayers(){
-  for(const entry of cards)entry.element.style.zIndex=String(entry.flipped?cards.length+1:entry.sequence+1);
+  cards.forEach((entry,index)=>{entry.element.style.zIndex=String(entry.flipped?cards.length+1:index+1);});
+}
+function disposeCard(entry){
+  entry.interaction.destroy();entry.animation?.cancel();entry.backScroll.destroy();
+  entry.slot.remove();entry.image.removeAttribute('src');
+}
+function syncCards(entries){
+  cards=entries;
+  const pile=$('pile');
+  // Restored Grid cards must precede the ten cards retained from the stack.
+  cards.forEach((entry,index)=>{if(pile.children[index]!==entry.slot)pile.insertBefore(entry.slot,pile.children[index]||null);});
+  updateCardLayers();
 }
 function resetCards(){
   // Invalidate yesterday's pending image request before clearing the displayed collection.
   generation++;busy=false;activeKey=displayedKey='';retryAt=0;failed.clear();
   chooseCandidates=createCandidateSelector();
   releaseHeldCard();viewMotion.finish();linkDropTarget.hide();
-  for(const entry of cards){entry.animation?.cancel();entry.backScroll.destroy();}
+  cardCollection.clear();
   cards=[];current=null;
   $('pile').replaceChildren();$('pile').scrollTop=0;
   document.body.classList.remove('card-pressed');
@@ -70,16 +83,17 @@ function layoutCards(){
 }}
 function toggleView(){
   releaseHeldCard();
-  const before=reducedMotion.matches?null:captureCards(cards);
+  const before=reducedMotion.matches?null:captureCards(cards.slice(-stackCardLimit));
   viewMotion.finish();
   gridMode=!gridMode;
   document.body.classList.toggle('grid-mode',gridMode);
   $('view-toggle').setAttribute('aria-pressed',String(gridMode));
   for(const label of $('view-toggle').querySelectorAll('[data-view]'))label.classList.toggle('selected',label.dataset.view===(gridMode?'grid':'stacked'));
+  syncCards(cardCollection.setGrid(gridMode));
   for(const entry of cards)entry.position=null;
   $('pile').scrollTop=0;
   layoutCards();
-  if(before)viewMotion.play(cards,before);
+  if(before)viewMotion.play(cards.filter(entry=>before.has(entry)),before);
 }
 function animateCard(entry){
   if(!entry)return;
@@ -108,8 +122,8 @@ function returnCard(entry){
     animation.onfinish=()=>{if(entry.animation===animation)entry.animation=null;};
   }
 }
-function printPhoto(photo,img){
-  if(current?.pageid===photo.pageid)return;
+function createCard(photo,sequence,img){
+  if(!img){img=new Image();img.loading='lazy';img.decoding='async';img.referrerPolicy='no-referrer';img.src=photo.thumbnail_url;}
   const card=document.createElement('button');card.type='button';card.className='card';
   const title=cleanTitle(photo.title);
   card.setAttribute('aria-label',`${title}. Hold still for 0.3 seconds to flip. Drag to the right edge and release to open Wikimedia in a new tab; release elsewhere to return. Keyboard: hold Space for details, arrow keys to move, Enter for full credits and source link.`);
@@ -145,8 +159,8 @@ function printPhoto(photo,img){
   });
   const slot=document.createElement('div');slot.className='photo-slot';
   flipper.append(front,back);card.append(flipper);slot.append(card);$('pile').append(slot);
-  const entry={element:card,slot,front,image:img,backScroll,photo,title,ratio:photo.width/photo.height,sequence:cards.length,flipped:false,pose:null,position:null,animation:null};
-  bindCardInteraction(card,{
+  const entry={element:card,slot,front,image:img,backScroll,photo,title,ratio:photo.width/photo.height,sequence,flipped:false,pose:null,position:null,animation:null};
+  entry.interaction=bindCardInteraction(card,{
     onPress:pressed=>{document.body.classList.toggle('card-pressed',pressed);card.classList.toggle('pressed',pressed);},
     onLift:()=>{entry.animation?.cancel();entry.animation=null;card.classList.remove('arriving');},
     onMove:(dx,dy)=>{
@@ -160,8 +174,13 @@ function printPhoto(photo,img){
     onFlip:held=>{entry.flipped=held;updateCardLayers();card.classList.toggle('held',held);card.setAttribute('aria-pressed',String(held));front.setAttribute('aria-hidden',String(held));back.setAttribute('aria-hidden',String(!held));backScroll.setActive(held);},
     onDetails:()=>showCredits(photo)
   });
-  cards.push(entry);updateCardLayers();current=photo;layoutCards();$('status').hidden=true;$('retry').hidden=true;
-  if(!reducedMotion.matches)animateCard(entry);
+  return entry;
+}
+function printPhoto(photo,img){
+  if(current?.pageid===photo.pageid)return;
+  viewMotion.finish();
+  syncCards(cardCollection.add(photo,img));current=photo;layoutCards();$('status').hidden=true;$('retry').hidden=true;
+  if(!reducedMotion.matches)animateCard(cards.at(-1));
 }
 function loadImage(url){return new Promise((resolve,reject)=>{const img=new Image();const timeout=setTimeout(()=>{img.onload=img.onerror=null;reject(new Error('Image timeout'));},10000);img.onload=()=>{clearTimeout(timeout);resolve(img);};img.onerror=()=>{clearTimeout(timeout);reject(new Error('Image unavailable'));};img.referrerPolicy='no-referrer';img.src=url;});}
 async function refresh(force=false){

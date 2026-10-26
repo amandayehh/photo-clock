@@ -2,6 +2,8 @@ let activeRelease=null;
 export function releaseHeldCard(){activeRelease?.();}
 
 export function bindCardInteraction(card,{onLift,onMove,onFlip,onDetails,onDrag=()=>{},onRelease=()=>{},onPress=()=>{}}){
+  const listeners=new AbortController();
+  const listen=(type,callback)=>card.addEventListener(type,callback,{signal:listeners.signal});
   let pointer=null,holdingSpace=false,flipTimer=null;
   function cancelFlip(){clearTimeout(flipTimer);flipTimer=null;}
   function release(cancelled=true){
@@ -25,7 +27,7 @@ export function bindCardInteraction(card,{onLift,onMove,onFlip,onDetails,onDrag=
     pointer.x=event.clientX;pointer.y=event.clientY;
     if(pointer.dragging)onDrag({x:pointer.x,y:pointer.y});
   }
-  card.addEventListener('pointerdown',event=>{
+  listen('pointerdown',event=>{
     if(event.button!==0||event.isPrimary===false)return;
     event.preventDefault();
     lift(false);
@@ -35,15 +37,15 @@ export function bindCardInteraction(card,{onLift,onMove,onFlip,onDetails,onDrag=
     card.setPointerCapture(event.pointerId);
     card.focus({preventScroll:true});
   });
-  card.addEventListener('pointermove',move);
-  card.addEventListener('pointerup',event=>{
+  listen('pointermove',move);
+  listen('pointerup',event=>{
     if(event.pointerId!==pointer?.id)return;
     move(event);release(false);
   });
-  for(const type of ['pointercancel','lostpointercapture'])card.addEventListener(type,event=>{
+  for(const type of ['pointercancel','lostpointercapture'])listen(type,event=>{
     if(event.pointerId===pointer?.id)release();
   });
-  card.addEventListener('keydown',event=>{
+  listen('keydown',event=>{
     if(event.code==='Space'){
       event.preventDefault();
       if(!holdingSpace){lift();holdingSpace=true;}
@@ -54,8 +56,9 @@ export function bindCardInteraction(card,{onLift,onMove,onFlip,onDetails,onDrag=
       onMove(event.key==='ArrowLeft'?-step:event.key==='ArrowRight'?step:0,event.key==='ArrowUp'?-step:event.key==='ArrowDown'?step:0);
     }
   });
-  card.addEventListener('keyup',event=>{if(event.code==='Space'){event.preventDefault();release();}});
-  card.addEventListener('blur',release);
+  listen('keyup',event=>{if(event.code==='Space'){event.preventDefault();release();}});
+  listen('blur',release);
   // Pointer clicks end the hold; Enter and assistive activation open accessible details.
-  card.addEventListener('click',event=>{if(event.detail===0&&!holdingSpace)onDetails();});
+  listen('click',event=>{if(event.detail===0&&!holdingSpace)onDetails();});
+  return {destroy(){if(activeRelease===release)release();else cancelFlip();listeners.abort();}};
 }
