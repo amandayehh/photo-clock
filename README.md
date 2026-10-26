@@ -39,7 +39,42 @@ automatic animation. Suisse Int'l Regular is used for typography.
 
 Corner smoothing uses the vendored MIT-licensed `figma-squircle` 1.1.0.
 
-## Expand the Commons collection
+## Monthly collection maintenance
+
+`.github/workflows/monthly-collection.yml` runs on GitHub on the first of each
+month at 9:17 AM America/New_York (including daylight saving time). No Codex
+routine, local computer, API key, or personal access token is required.
+
+Each run checks every existing file with fresh Commons metadata and searches
+newest-first text/category results plus the geographic points, checking up to
+1,000 new candidates. It uses the same eligibility rules, refreshes credits and
+capture metadata, and retires deleted or newly ineligible records. Street
+addresses are retained only if the camera coordinates remain unchanged; missing
+addresses can be added separately with the enrichment script. Original baseline
+counts stay historical, with retired records recorded in `retired_photos`.
+
+Network failures, incomplete responses, rate limits, or unusually large removals
+stop the refresh before replacing the catalog. Tests must pass before the bot
+commits generated files and deploys them. A concurrent source push causes a
+normal push conflict, never a force-push. The previously deployed site remains
+available if a run fails. A successful verification is recorded each month even
+if no photos are added. The map shows net changes against the original baseline.
+
+In GitHub **Actions → Monthly Commons collection → Run workflow**, choose
+`refresh` to run the full check or `smoke` to check a small live sample without
+changing or deploying the collection. Logs and run summaries show results.
+GitHub schedules can be delayed; public-repository schedules may be disabled
+after 60 days without repository activity. Check Actions if updates stop.
+
+Local equivalents:
+
+```sh
+python3 scripts/refresh_collection.py --smoke
+python3 scripts/refresh_collection.py
+# Regenerate reports and run tests before committing a full refresh.
+```
+
+## Manually expand the Commons collection
 
 ```sh
 python3 scripts/expand_commons.py

@@ -41,7 +41,9 @@ class CommonsTest(unittest.TestCase):
         self.assertEqual(len(ids),len(set(ids)))
         hashes=[p['sha1'] for p in photos if p.get('sha1')]
         self.assertEqual(len(hashes),len(set(hashes)))
-        self.assertTrue(set(data.get('expansion_baseline',{}).get('pageids',[])).issubset(set(ids)))
+        retired={p['pageid'] for p in data.get('retired_photos',[])}
+        self.assertFalse(retired.intersection(ids))
+        self.assertTrue(set(data.get('expansion_baseline',{}).get('pageids',[])).issubset(set(ids)|retired))
         for p in photos:
             self.assertTrue(p['source_url'].startswith('https://commons.wikimedia.org/'))
             self.assertTrue(p['thumbnail_url'].startswith('https://'))

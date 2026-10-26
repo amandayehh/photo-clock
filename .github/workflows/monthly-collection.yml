@@ -1,0 +1,85 @@
+name: Monthly Commons collection
+
+on:
+  schedule:
+    - cron: '17 9 1 * *'
+      timezone: America/New_York
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Refresh and publish, or test API access without changing the catalog'
+        type: choice
+        options: [refresh, smoke]
+        default: refresh
+
+permissions:
+  contents: read
+
+# Serialize with normal Pages deployments. A concurrent source push makes the
+# final fast-forward push fail rather than overwriting the newer source commit.
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: pip
+          cache-dependency-path: scripts/report-requirements.txt
+      - run: npm ci
+      - run: python -m pip install -r scripts/report-requirements.txt
+      - name: Check existing code before collection changes
+        run: |
+          npm test
+          python -m unittest discover -s test -p '*_test.py'
+      - name: Smoke check Commons access (no changes)
+        if: inputs.mode == 'smoke'
+        run: python scripts/refresh_collection.py --smoke
+      - name: Refresh Commons catalog and coverage
+        if: inputs.mode != 'smoke'
+        run: |
+          python scripts/refresh_collection.py
+          python scripts/build_coverage.py
+          npm test
+          python -m unittest discover -s test -p '*_test.py'
+      - name: Commit verified collection
+        if: inputs.mode != 'smoke'
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add dist/photos.json dist/coverage.html dist/reports
+          if ! git diff --cached --quiet; then
+            git commit -m 'Refresh monthly Commons collection and coverage'
+            git push origin HEAD:main
+          fi
+      # GITHUB_TOKEN commits don't trigger the push workflow, so deploy here.
+      - uses: actions/configure-pages@v5
+        if: inputs.mode != 'smoke'
+      - uses: actions/upload-pages-artifact@v4
+        if: inputs.mode != 'smoke'
+        with:
+          path: dist
+      - name: Deploy refreshed clock
+        if: inputs.mode != 'smoke'
+        id: deployment
+        uses: actions/deploy-pages@v4

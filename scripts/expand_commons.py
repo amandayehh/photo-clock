@@ -35,14 +35,15 @@ POINTS=[(40.8075,-73.945),(40.868,-73.922),(40.714,-73.998),(40.722,-73.981),
  (40.51,-74.252),(40.586,-74.077),(40.629,-74.105),(40.56,-74.135)]
 
 class Client:
-    def __init__(self):
+    def __init__(self, *, use_cache=True, strict=False):
         self.cache=ROOT/'.cache/commons-expanded';self.cache.mkdir(parents=True,exist_ok=True)
+        self.use_cache=use_cache;self.strict=strict
         self.last=0;self.failures=[];self.calls=0
     def call(self,**params):
         params={'action':'query','format':'json','formatversion':2,'maxlag':5,**params}
         key=hashlib.sha256(json.dumps(params,sort_keys=True).encode()).hexdigest()
         path=self.cache/(key+'.json')
-        if path.exists():return json.loads(path.read_text())
+        if self.use_cache and path.exists():return json.loads(path.read_text())
         url=API+'?'+urllib.parse.urlencode(params)
         for attempt in range(3):
             time.sleep(max(0,.6-(time.monotonic()-self.last)));self.last=time.monotonic();self.calls+=1
@@ -57,9 +58,10 @@ class Client:
                 if error.code==429:
                     raise RuntimeError('Commons rate limit reached; rerun later to resume cached progress.') from None
                 reason=f'HTTP {error.code}'
-            except (urllib.error.URLError,TimeoutError,ValueError) as error:reason=type(error).__name__
+            except (urllib.error.URLError,TimeoutError,ValueError) as error:reason=f'{type(error).__name__}: {error}'
             time.sleep(2**attempt)
         self.failures.append({'params':params,'reason':reason if 'reason' in locals() else 'maxlag'})
+        if self.strict:raise RuntimeError(f'Commons request failed: {self.failures[-1]["reason"]}')
         return {}
 
 

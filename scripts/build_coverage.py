@@ -41,6 +41,7 @@ def main():
     out=ROOT/'dist/reports';out.mkdir(parents=True,exist_ok=True)
     report={**stats,'collection_updated':data.get('updated'),
         'commons_expansion':data.get('commons_expansion'),
+        'monthly_check':data.get('monthly_check'),
         'licenses':dict(Counter(p['license'] for p in photos)),
         'relevance':dict(Counter(p['relevance'] for p in photos)),
         'discovery_methods':dict(Counter(route for p in photos for route in p.get('discovery_routes',[])))}
@@ -69,14 +70,18 @@ def main():
     fig.text(.09,.905,f'{stats["photos"]:,} photographs  ·  {stats["covered_minutes"]:,} / 1,440 exact minutes  ·  {stats["covered_minutes"]/14.4:.1f}% coverage',fontsize=12)
     labels=['No exact match','Previously covered','Newly covered']
     fig.legend(handles=[Patch(facecolor=c,label=l) for c,l in zip(colors,labels)],loc='lower left',bbox_to_anchor=(.08,.04),ncol=4,frameon=False)
-    note=f'Commons expansion: +{stats["added_photos"]:,} photos · +{stats["new_minutes"]} exact minutes since the original {baseline["photos"]}-photo collection. Bounded sample, not a census.'
+    lost_minutes=sum(i in old_minutes and not sum(b.values()) for i,b in enumerate(buckets))
+    note=f'Since the original {baseline["photos"]} photos: {stats["added_photos"]:+,} net photos · +{stats["new_minutes"]} / −{lost_minutes} exact minutes. Bounded sample, not a census.'
     fig.text(.09,.025,note,fontsize=10,color='#555')
     fig.subplots_adjust(left=.09,right=.98,top=.86,bottom=.17)
     fig.savefig(out/'coverage.png',dpi=160,facecolor=fig.get_facecolor());fig.savefig(out/'coverage.svg',facecolor=fig.get_facecolor());plt.close(fig)
+    svg=out/'coverage.svg';svg.write_text('\n'.join(line.rstrip() for line in svg.read_text().splitlines())+'\n')
     rows=''.join(f'<tr><td>{p["minute"]//60:02}:{p["minute"]%60:02}</td><td>{html.escape(p.get("source","commons"))}</td><td><a href="{html.escape(p["source_url"],quote=True)}">{html.escape(p["title"].removeprefix("File:"))}</a></td><td>{html.escape(p["artist"])}</td><td>{html.escape(p["license"])}</td></tr>' for p in sorted(photos,key=lambda p:p['minute']))
     page='''<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>photo-clock · Source coverage</title><link rel="icon" href="favicon.png?v=789e0149" type="image/png" sizes="240x240"><style>body{max-width:1200px;margin:48px auto;padding:0 24px;font:16px/1.6 system-ui;color:#242827;background:#fafaf8}h1{font-size:38px;line-height:1.2}a{color:#226e68}img{width:100%;height:auto}.note{padding:16px 20px;background:#edf1ef;border-radius:10px}table{width:100%;border-collapse:collapse;font-size:13px}td,th{padding:10px;text-align:left;border-bottom:1px solid #ddd;vertical-align:top}.scroll{overflow:auto}summary{cursor:pointer;font-weight:600}footer{margin-top:40px;color:#666}</style><a href="./">← Back to the clock</a><h1>Every source. Every minute.</h1>'''
     page+=f'<p>{stats["photos"]} photos cover <strong>{stats["covered_minutes"]} exact minutes</strong>. {stats["missing_minutes"]} minutes have no exact match in the saved collection; the clock uses an earlier unseen photo.</p>'
     page+=f'<p class="note">{note} {stats["commons_with_flickr_origin"]} Commons records link to Flickr originals. All photographs are sourced through Wikimedia Commons; no paid Flickr API is used.</p>'
+    if data.get('monthly_check'):
+        page+=f'<p>Last monthly check: {html.escape(data["monthly_check"]["checked_at"][:10])}. Collection updates run through GitHub Actions on the first of each month.</p>'
     page+='<img src="reports/coverage.svg" alt="24 by 60 grid of exact capture-minute availability. Download the minute CSV for every count."><p><a href="reports/coverage.png">Download map</a> · <a href="reports/minute-coverage.csv">Every minute · CSV</a> · <a href="reports/source-inventory.csv">Every source · CSV</a> · <a href="reports/source-summary.json">Audit summary · JSON</a></p>'
     page+=f'<details><summary>Browse all {len(photos)} source records</summary><div class="scroll"><table><thead><tr><th>Time</th><th>Provider</th><th>Photograph</th><th>Photographer</th><th>License</th></tr></thead><tbody>{rows}</tbody></table></div></details>'
     page+='<footer>Coverage describes the saved research collection, not everything available online. Camera times without recorded offsets are assumed local; camera clock accuracy is not independently verified. Discovery methods may overlap.</footer></html>'
