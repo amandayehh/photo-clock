@@ -12,6 +12,6 @@ export function applySmoothing(entry,size,layout){
   const width=size.width+2*layout.pad;
   const height=parseFloat(getComputedStyle(entry.front).height);
   entry.element.style.setProperty('--card-surface',smoothSurface(width,height,layout.radius));
-  entry.element.style.setProperty('--card-pressed-surface',smoothSurface(width,height,layout.radius,'hsl(0, 0%, 90%)'));
+  entry.element.style.setProperty('--card-pressed-surface',smoothSurface(width,height,layout.radius,'hsl(0, 0%, 80%)'));
   entry.image.style.clipPath=`path("${smoothPath(size.width,size.height,layout.radius/2)}")`;
 }
