@@ -56,16 +56,17 @@ body.card-pressed,body.card-pressed *{cursor:grabbing!important}
 .card-metadata>.metadata-label:nth-last-child(2),.card-metadata>.metadata-value:last-child{line-height:1.15}
 
 .view-toggle{position:fixed;top:var(--toolbar-top);left:var(--page-padding);z-index:3;display:flex;gap:2px;padding:3px;border:1px solid #ffffff30;border-radius:6px;background:#131313e6;color:#999;font-size:13px;line-height:1.2}
-.view-toggle span{padding:6px 10px;border-radius:3px}
+.view-toggle span{display:grid;place-items:center;width:calc(var(--toolbar-height) - 8px);height:100%;padding:0;border-radius:3px}
 .view-toggle .selected{background:#ffffff19;color:#fff}
+.view-toggle span:hover{background:#282828}
 .view-toggle:hover{border-color:#ffffff60}
 /* Shared height keeps the square help button aligned with the view toggle. */
 :root{--photo-radius:clamp(5.6px,1.470588vmin,16px);--photo-shadow:drop-shadow(0 4px 15px rgb(0 0 0 / .4));--toolbar-height:calc(13px * 1.2 + 20px);--page-padding:max(20px,env(safe-area-inset-top),env(safe-area-inset-right),env(safe-area-inset-bottom),env(safe-area-inset-left));--toolbar-top:var(--page-padding);--clock-size:clamp(20px,3.68vmin,40px);--clock-height:calc(var(--clock-size) * 1.2);--stage-top:calc(var(--page-padding) * 2 + var(--toolbar-height));--stage-bottom:calc(var(--page-padding) * 2 + var(--clock-height))}
 .view-toggle{top:var(--toolbar-top);height:var(--toolbar-height)}
 .about-control{position:fixed;top:var(--toolbar-top);right:var(--page-padding);z-index:4}
 .about-toggle{display:grid;place-items:center;width:var(--toolbar-height);height:var(--toolbar-height);padding:0;border:0;border-radius:8px;background:transparent;color:#fff;transition:background 150ms ease}
-.about-toggle img{display:block;filter:brightness(0) invert(.6);pointer-events:none}
-.about-toggle:hover img{filter:brightness(0) invert(1)}
+.about-toggle img,.view-toggle img{display:block;filter:brightness(0) invert(.6);pointer-events:none}
+.about-toggle:hover img,.view-toggle .selected img,.view-toggle span:hover img{filter:brightness(0) invert(1)}
 .about-toggle:hover,.about-toggle[aria-expanded="true"]{background:#282828}
 .about-panel{position:absolute;top:0;right:calc(var(--toolbar-height) + 10px);width:min(330px,calc(100vw - var(--page-padding) * 4 - var(--toolbar-height)));padding:0;border-radius:0;background:transparent;isolation:isolate;color:#fff;font-size:14px;font-weight:400;line-height:1.3;letter-spacing:.01em;text-align:left;max-height:calc(100dvh - var(--toolbar-top) - var(--page-padding));overflow:visible}
 .about-panel::before{content:"";position:absolute;inset:0;background-image:var(--panel-surface);background-size:100% 100%;background-repeat:no-repeat;filter:var(--photo-shadow);z-index:-1;pointer-events:none}
