@@ -12,12 +12,13 @@ export function stackLayout(width,height,ratios){
   const gap=pad*.75,theta=3*Math.PI/180;
   const shapes=ratios.length?ratios:[1];
   // One common fit factor preserves equal image area even on narrow screens.
-  // The requested reference is a square with side = 50% of the shorter dimension.
+  // Gently enlarge compact layouts, tapering back to the 50% desktop reference.
+  const compact=Math.max(0,Math.min(1,(900-short)/500));
   const fits=side=>shapes.every(r=>{
     const w=side*Math.sqrt(r)+2*pad,h=side/Math.sqrt(r)+2*pad+2*gap+titleSize*1.15+stampSize*1.15;
-    return w*Math.cos(theta)+h*Math.sin(theta)<=width*.92 && h*Math.cos(theta)+w*Math.sin(theta)<=height*.84;
+    return w*Math.cos(theta)+h*Math.sin(theta)<=width*(.92+.04*compact) && h*Math.cos(theta)+w*Math.sin(theta)<=height*.84;
   });
-  let low=0,high=short*.5;
+  let low=0,high=short*(.5+.06*compact);
   if(!fits(high)){for(let n=0;n<32;n++){const middle=(low+high)/2;if(fits(middle))low=middle;else high=middle;}}
   return {side:high,area:high*high,pad,gap,titleSize,stampSize,radius:pad*.8};
 }

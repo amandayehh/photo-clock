@@ -15,7 +15,14 @@ test('landscape, portrait and square photos have identical surface area',()=>{
       assert.ok(Math.abs(d.width*d.height-layout.area)<1e-6);
       assert.ok(Math.abs(d.width/d.height-ratio)<1e-10);
     }
-    assert.ok(layout.side<=Math.min(w,h)*.5+1e-6);
+    assert.ok(layout.side<=Math.min(w,h)*.56+1e-6);
+    for(const ratio of [.527,1,1.5,3.612]){
+      const size=imageDimensions(layout.area,ratio),theta=3*Math.PI/180;
+      const cardWidth=size.width+2*layout.pad;
+      const cardHeight=size.height+2*layout.pad+2*layout.gap+1.15*(layout.titleSize+layout.stampSize);
+      assert.ok(cardWidth*Math.cos(theta)+cardHeight*Math.sin(theta)<=w*.96+1e-6);
+      assert.ok(cardHeight*Math.cos(theta)+cardWidth*Math.sin(theta)<=h*.84+1e-6);
+    }
   }
 });
 test('reference area is a square with half the shorter viewport dimension',()=>{

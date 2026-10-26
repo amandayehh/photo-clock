@@ -80,3 +80,5 @@ body.card-pressed,body.card-pressed *{cursor:grabbing!important}
 .grid-mode{--photo-shadow:drop-shadow(0 3px 5px rgb(0 0 0 / .3))}
 .view-motion-layer{position:fixed;inset:0;z-index:1;pointer-events:none}
 .view-motion-layer .card{pointer-events:none!important;will-change:transform}
+
+@media(max-width:600px){.grid-mode .pile{padding-inline:10px;column-gap:6px}}
