@@ -1,7 +1,7 @@
-const nyFormatter = new Intl.DateTimeFormat('en-GB', {timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'});
+const nyFormatter = new Intl.DateTimeFormat('en-US', {timeZone:'America/New_York',timeZoneName:'short',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'});
 export function nyTime(now=new Date()) {
   const p=Object.fromEntries(nyFormatter.formatToParts(now).map(x=>[x.type,x.value]));
-  return {date:`${p.year}-${p.month}-${p.day}`,minute:Number(p.hour)*60+Number(p.minute),second:Number(p.second)};
+  return {date:`${p.year}-${p.month}-${p.day}`,minute:Number(p.hour)*60+Number(p.minute),second:Number(p.second),timeZone:p.timeZoneName};
 }
 export function priorDate(date){const d=new Date(date+'T12:00:00Z');d.setUTCDate(d.getUTCDate()-1);return d.toISOString().slice(0,10);}
 export function displayTime(minute){const h=Math.floor(minute/60);return {clock:`${h%12||12}:${String(minute%60).padStart(2,'0')}`,period:h<12?'AM':'PM'};}

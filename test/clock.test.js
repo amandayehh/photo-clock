@@ -81,3 +81,11 @@ test('enriched collection locations have camera coordinates, complete addresses 
   }
   assert.ok(resolved>0);
 });
+
+test('clock timezone changes between EST and EDT at the New York DST transitions',()=>{
+  for(const [instant,expected] of [
+    ['2026-01-15T12:00:00Z','EST'],['2026-07-15T12:00:00Z','EDT'],
+    ['2026-03-08T06:59:59Z','EST'],['2026-03-08T07:00:00Z','EDT'],
+    ['2026-11-01T05:59:59Z','EDT'],['2026-11-01T06:00:00Z','EST']
+  ])assert.equal(nyTime(new Date(instant)).timeZone,expected);
+});
