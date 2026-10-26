@@ -15,7 +15,7 @@ export function createBackScroll(content,{reducedMotion=()=>false,fontSize=()=>1
     if(now-started>=1400){
       const elapsed=previous===null?0:Math.min(now-previous,100);
       // Keep fractional progress independently: some browsers round scrollTop writes.
-      position=Math.min(end,position+elapsed*Math.max(1,fontSize())/1000);
+      position=Math.min(end,position+elapsed*Math.max(1,fontSize())*2/1000);
       content.scrollTop=position;
       if(position>=end){content.scrollTop=end;return;}
     }
