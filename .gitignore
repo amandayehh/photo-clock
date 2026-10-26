@@ -3,3 +3,7 @@ node_modules/
 *.tar.gz
 .cache/
 __pycache__/
+
+.env
+.env.*
+!.env.example

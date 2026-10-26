@@ -1,0 +1,32 @@
+{
+  "113724921": {
+    "decision": "exclude",
+    "note": "Metadata only: description explicitly says five-segment panorama; one EXIF timestamp does not establish the capture time of all component photographs.",
+    "review_type": "metadata_only"
+  },
+  "140558228": {
+    "decision": "exclude",
+    "note": "Metadata only: in-flight photograph; no explicit capture-time offset was retrieved. A camera aboard a flight cannot be assumed to use NYC local time without further evidence.",
+    "review_type": "metadata_only"
+  },
+  "33407186": {
+    "decision": "exclude",
+    "note": "Metadata only: camera date is June 15 while supplied photo date is June 14. Hold for review instead of using this sparse early-morning slot.",
+    "review_type": "metadata_only"
+  },
+  "178647972": {
+    "decision": "exclude",
+    "note": "Metadata only: NASA ISS Earth-observation photograph. NYC is depicted, but assigning an unzoned spaceborne camera clock to NYC local time is unjustified.",
+    "review_type": "metadata_only"
+  },
+  "174948065": {
+    "decision": "exclude",
+    "note": "Metadata only: camera capture date is 2024-01-03; supplied description date is 2025-09-12. Unresolved capture-date conflict.",
+    "review_type": "metadata_only"
+  },
+  "30453951": {
+    "decision": "exclude",
+    "note": "Metadata only: embedded coordinates and Commons location coordinates disagree by more than the review threshold; defer pending resolution.",
+    "review_type": "metadata_only"
+  }
+}

@@ -1,92 +1,95 @@
 # New York Minute
 
-A minimal photographic clock, adapted from Figma file
-BcIVNvRTYHZrEXbR4rCSC0, node 1:24, with live Wikimedia-derived collection imagery.
+A clock told through photographs of New York City, using recorded camera capture
+times from Wikimedia Commons. The live collection is a bounded research sample,
+not a census of Commons and not a live per-minute search.
+
+- [Clock](https://amandayehh.github.io/new-york-minute-clock/)
+- [Coverage map and source inventory](https://amandayehh.github.io/new-york-minute-clock/coverage.html)
 
 ## Run and verify
 
-- `npm run dev` serves `dist/` on http://127.0.0.1:8780/.
-- `npm test` checks New York time, midnight and DST behavior, random selection,
-  all 1,440 fallback minutes, title cleanup, equal-area sizing and entrance frames.
+`npm run dev` serves `dist/` at http://127.0.0.1:8780/.
 
-## Interface
+```sh
+npm ci
+npm test
+python3 -m unittest discover -s test -p '*_test.py'
+```
 
-The page contains a near-black canvas, a stack of white photo cards with small
-alternating rotations and drop shadows, and the current NYC time at the bottom.
-Every newly selected image enters at full opacity along a sampled cubic Bezier
-curve from above the viewport, settling over earlier cards in 1.8 seconds. Cards
-remain in the current page session. Empty minutes do not add cards. Reduced-motion
-preferences place new cards immediately without the entrance movement.
+Push to `main` to test and deploy `dist/` to GitHub Pages. All asset URLs are
+relative to support the repository subpath. The prior Sites manifest is retained
+for provenance; GitHub Pages is the active publishing target.
 
-The photograph surface area is based on a square whose side is 50% of the shorter
-viewport dimension. Width = sqrt(area * aspectRatio); height = sqrt(area /
-aspectRatio). One shared fit factor reduces all photographs equally if the
-collection's widest or tallest ratio would exceed the viewport. Padding, title,
-and shadow are outside the equal photographic area. Resizing recomputes all cards
-with the same reference area. Images retain their full aspect ratio without crops.
+## Clock behavior
 
-Names remove the File: prefix, extension, underscores, and parenthetical segments,
-including nested parentheses. Very long names fit into one line and may ellipsize;
-the complete cleaned name is accessible in the card's details. Clicking or keyboard
-activating the top card opens author, capture-time, source and license information.
-The main view has no navigation, headings, explorer or promotional copy.
+The bottom clock follows America/New_York, including EDT/EST. Exact capture-minute
+matches are randomly selected. Missing or exhausted minutes search backward for
+an unseen photo, wrapping midnight. History is per open page session and clears
+on refresh. If every photograph has been shown, the current one stays. Failed
+images try alternatives and are retried after a minute.
 
-## Collection and clock behavior
+Cards preserve equal photographic area across aspect ratios, stack in arrival
+order, and animate for one second. Grid view uses four, six or eight columns by
+viewport width. Hold still for 0.6 seconds to show metadata; releasing restores
+the front. Overflowing backs scroll to the end. Drag toward the Learn more edge
+and release to open the original Commons page. Space holds details, arrow keys
+move the card, and Enter opens full credits. Reduced-motion preferences disable
+automatic animation. Suisse Int'l Regular is used for typography.
 
-The static dataset contains 482 provisional photographs across 298 minutes. It is
-not a fully curated release collection, and automatic Wikimedia synchronization
-is not yet connected. Time is always America/New_York, including daylight saving.
-Most capture timestamps are assumed local; this is disclosed in photo details.
+Corner smoothing uses the vendored MIT-licensed `figma-squircle` 1.1.0.
 
-Missing minutes use the nearest earlier photograph not yet shown in the current
-page session, searching backward across midnight when needed. Matching photos
-are randomly selected. Shown-photo history stays in memory for this page only:
-refreshing or opening a new tab starts fresh, and midnight does not clear it.
-Once all photographs have been shown, the current photo stays. Failed images
-try alternatives without removing the existing stack and are retried after a minute.
+## Expand the Commons collection
 
-Remote images remain on Wikimedia. Public metadata only is in dist/photos.json.
-No private study files, image originals, or credentials are included in the site.
+```sh
+python3 scripts/expand_commons.py
+python3 scripts/enrich_locations.py
+python3 -m venv .cache/report-env
+.cache/report-env/bin/python -m pip install -r scripts/report-requirements.txt
+.cache/report-env/bin/python scripts/build_coverage.py
+```
 
-## Verification limits
+Discovery uses five-borough night, dawn and early-morning searches, neighborhood
+searches, selected categories, and additional geographic points. Requests are
+sequential, cached in `.cache/commons-expanded`, and stop on HTTP 429. Each run
+has bounded result caps. Reruns preserve existing photos and skip existing IDs;
+request failures and rejection reasons are recorded in `commons_expansion`.
 
-Fourteen automated tests and JavaScript syntax checks pass. The Figma screenshot
-and node styles were read. Browser inspection was previously declined; visual
-layout, image loading, and actual browser animation playback remain unverified.
-The design photographs are dynamic content slots populated from the collection,
-not static Figma image assets. Arial/Helvetica substitutes for the unavailable
-licensed Test Söhne font.
+Qualification requires a valid camera `DateTimeOriginal`, supporting camera
+metadata, a short edge of at least 480 pixels, and NYC geographic or text evidence.
+The expansion accepts CC BY, CC BY-SA, CC0 and public-domain license labels with
+photographer attribution. Known exclusions, apparent nonphotos, explicit stitched
+composites, conflicting metadata and matching image SHA-1 hashes are rejected.
+No image originals are downloaded. Imported images remain on Wikimedia servers.
 
-Corner smoothing uses `figma-squircle` 1.1.0 (MIT), vendored in `dist/vendor/` with its license. The card silhouettes and image clipping paths use `cornerSmoothing: 0.6`. After upgrading the package, copy its `dist/index.js` and `LICENSE` into those vendor files.
+Time-zone offsets, when available, are converted to New York time. Otherwise the
+camera clock is assumed local, and this assumption appears in full credits.
+Locations and times can be inaccurate. Metadata qualification does not establish
+that the camera clock was correct or substitute for visual/rights review.
+
+The original baseline contains 482 photos covering 298 capture minutes. The
+current counts, per-minute availability and all source links are generated from
+`dist/photos.json` into `dist/reports/` and `dist/coverage.html`. Newly covered
+minutes are highlighted against the baseline. The inventory also identifies
+Commons files with known Flickr origins; these are Commons-hosted files and do
+not require direct Flickr API access. No direct Flickr photos are included.
 
 ## Camera-location addresses
 
-Run `python3 scripts/enrich_locations.py` to enrich the saved collection. The script
-reads Commons `GPSLatitude` / `GPSLongitude` from `imageinfo.extmetadata`, which are
-the page's Camera location fields, then reverse-geocodes them with NYC Planning
-GeoSearch. It does not use the subject's location or infer coordinates from a borough.
-Requests run sequentially with a delay and are cached in `.cache/camera-addresses.json`;
-existing photo records also prevent repeated lookups. `--refresh` rechecks Commons
-coordinates while retaining the geocoding cache. No API key or runtime map request
-is required by the published website.
+The address enrichment script uses Commons Camera location fields and NYC
+Planning GeoSearch, caching results in `.cache/camera-addresses.json`. Only nearby
+results within 150 meters with street, city and ZIP code are displayed. Missing
+coordinates or incomplete/distant matches omit the Location row. Addresses are
+approximate nearby mapped addresses, not verified camera doorsteps.
 
-Only nearby results (within 150 meters) with street, city, and ZIP code are shown.
-The address represents the nearest mapped address, not a verified camera doorstep.
-Missing coordinates, incomplete addresses, and distant matches omit the Location
-row. Public provenance, lookup date, coordinates, and distance are stored with each
-resolved address in `dist/photos.json`. Address attribution appears in full credits.
+Sources: [Commons Imageinfo API](https://www.mediawiki.org/wiki/API:Imageinfo),
+[Commons camera locations](https://commons.wikimedia.org/wiki/Template:Location),
+[NYC Planning GeoSearch](https://geosearch.planninglabs.nyc/docs/),
+[NYC borough boundaries](https://data.cityofnewyork.us/City-Government/Borough-Boundaries/gthc-hcne).
 
-Sources: [Commons camera locations](https://commons.wikimedia.org/wiki/Template:Location),
-[CommonsMetadata API](https://www.mediawiki.org/wiki/Extension:CommonsMetadata),
-[NYC Planning GeoSearch](https://geosearch.planninglabs.nyc/docs/).
-Run `python3 -m unittest discover -s test -p '*_test.py'` for ingestion checks.
+## Verification limits
 
-## GitHub Pages
-
-Repository: https://github.com/amandayehh/new-york-minute-clock
-
-Live site: https://amandayehh.github.io/new-york-minute-clock/
-
-Push to `main` to run the test suite and publish `dist/` through the GitHub
-Pages workflow. Asset and data URLs are relative so the site works under this
-repository path. In repository Settings → Pages, the source is GitHub Actions.
+Automated checks cover selection, session history, DST, motion lifecycle,
+interactions, sizing, metadata eligibility and coverage calculations. Browser
+inspection is currently blocked by saved permissions; the new collection has
+not been visually reviewed photo by photo. Coverage-map PNGs are checked locally.

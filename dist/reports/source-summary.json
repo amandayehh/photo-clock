@@ -1,0 +1,437 @@
+{
+  "photos": 3876,
+  "covered_minutes": 989,
+  "missing_minutes": 451,
+  "commons_minutes": 989,
+  "flickr_minutes": 0,
+  "new_flickr_minutes": 0,
+  "commons_photos": 3876,
+  "flickr_photos": 0,
+  "commons_with_flickr_origin": 841,
+  "baseline_photos": 482,
+  "baseline_minutes": 298,
+  "added_photos": 3394,
+  "new_minutes": 691,
+  "collection_updated": "2026-10-26",
+  "commons_expansion": {
+    "checked_at": "2026-10-26T20:31:43.073341+00:00",
+    "candidates": 4977,
+    "added": 3394,
+    "total_photos": 3876,
+    "covered_minutes": 989,
+    "new_minutes": 691,
+    "rejections": {
+      "missing_camera_capture_time": 1253,
+      "metadata_request_incomplete": 0,
+      "multi_exposure_composite": 12,
+      "insufficient_camera_evidence": 97,
+      "unresolved_airborne_timezone": 5,
+      "conflicting_capture_date": 27,
+      "nyc_relevance_not_established": 193,
+      "previous_manual_exclusion": 1,
+      "license_needs_review": 1,
+      "conflicting_camera_coordinates": 12,
+      "short_edge_under_480px": 13,
+      "nonphoto_title": 11,
+      "missing_artist": 3
+    },
+    "requests": 448,
+    "request_failures": [
+      {
+        "params": {
+          "action": "query",
+          "format": "json",
+          "formatversion": 2,
+          "maxlag": 5,
+          "list": "geosearch",
+          "gscoord": "40.629|-74.105",
+          "gsradius": 1500,
+          "gsnamespace": 6,
+          "gslimit": 100,
+          "gsprimary": "all"
+        },
+        "reason": "ValueError"
+      }
+    ],
+    "discovery": [
+      {
+        "method": "expanded-text",
+        "label": "Manhattan night filetype:bitmap",
+        "results": 100
+      },
+      {
+        "method": "expanded-text",
+        "label": "Brooklyn night filetype:bitmap",
+        "results": 100
+      },
+      {
+        "method": "expanded-text",
+        "label": "Queens New York night filetype:bitmap",
+        "results": 100
+      },
+      {
+        "method": "expanded-text",
+        "label": "Bronx night filetype:bitmap",
+        "results": 100
+      },
+      {
+        "method": "expanded-text",
+        "label": "Staten Island night filetype:bitmap",
+        "results": 100
+      },
+      {
+        "method": "expanded-text",
+        "label": "Manhattan dawn filetype:bitmap",
+        "results": 100
+      },
+      {
+        "method": "expanded-text",
+        "label": "Brooklyn dawn filetype:bitmap",
+        "results": 100
+      },
+      {
+        "method": "expanded-text",
+        "label": "Queens New York dawn filetype:bitmap",
+        "results": 7
+      },
+      {
+        "method": "expanded-text",
+        "label": "Bronx dawn filetype:bitmap",
+        "results": 100
+      },
+      {
+        "method": "expanded-text",
+        "label": "Staten Island dawn filetype:bitmap",
+        "results": 8
+      },
+      {
+        "method": "expanded-text",
+        "label": "Manhattan early morning filetype:bitmap",
+        "results": 100
+      },
+      {
+        "method": "expanded-text",
+        "label": "Brooklyn early morning filetype:bitmap",
+        "results": 88
+      },
+      {
+        "method": "expanded-text",
+        "label": "Queens New York early morning filetype:bitmap",
+        "results": 40
+      },
+      {
+        "method": "expanded-text",
+        "label": "Bronx early morning filetype:bitmap",
+        "results": 3
+      },
+      {
+        "method": "expanded-text",
+        "label": "Staten Island early morning filetype:bitmap",
+        "results": 11
+      },
+      {
+        "method": "expanded-text",
+        "label": "Manhattan sunrise filetype:bitmap",
+        "results": 100
+      },
+      {
+        "method": "expanded-text",
+        "label": "Brooklyn sunrise filetype:bitmap",
+        "results": 53
+      },
+      {
+        "method": "expanded-text",
+        "label": "Queens New York sunrise filetype:bitmap",
+        "results": 31
+      },
+      {
+        "method": "expanded-text",
+        "label": "Bronx sunrise filetype:bitmap",
+        "results": 7
+      },
+      {
+        "method": "expanded-text",
+        "label": "Staten Island sunrise filetype:bitmap",
+        "results": 100
+      },
+      {
+        "method": "expanded-text",
+        "label": "Harlem New York filetype:bitmap",
+        "results": 100
+      },
+      {
+        "method": "expanded-text",
+        "label": "Chinatown Manhattan New York filetype:bitmap",
+        "results": 100
+      },
+      {
+        "method": "expanded-text",
+        "label": "Lower East Side New York filetype:bitmap",
+        "results": 100
+      },
+      {
+        "method": "expanded-text",
+        "label": "Washington Heights New York filetype:bitmap",
+        "results": 100
+      },
+      {
+        "method": "expanded-text",
+        "label": "East Village New York filetype:bitmap",
+        "results": 100
+      },
+      {
+        "method": "expanded-text",
+        "label": "DUMBO Brooklyn New York filetype:bitmap",
+        "results": 100
+      },
+      {
+        "method": "expanded-text",
+        "label": "Williamsburg Brooklyn New York filetype:bitmap",
+        "results": 100
+      },
+      {
+        "method": "expanded-text",
+        "label": "Bushwick Brooklyn New York filetype:bitmap",
+        "results": 100
+      },
+      {
+        "method": "expanded-text",
+        "label": "Coney Island New York filetype:bitmap",
+        "results": 100
+      },
+      {
+        "method": "expanded-text",
+        "label": "Greenpoint Brooklyn New York filetype:bitmap",
+        "results": 100
+      },
+      {
+        "method": "expanded-text",
+        "label": "Long Island City New York filetype:bitmap",
+        "results": 100
+      },
+      {
+        "method": "expanded-text",
+        "label": "Astoria Queens New York filetype:bitmap",
+        "results": 100
+      },
+      {
+        "method": "expanded-text",
+        "label": "Flushing Queens New York filetype:bitmap",
+        "results": 100
+      },
+      {
+        "method": "expanded-text",
+        "label": "Rockaway Queens New York filetype:bitmap",
+        "results": 100
+      },
+      {
+        "method": "expanded-text",
+        "label": "Jackson Heights New York filetype:bitmap",
+        "results": 100
+      },
+      {
+        "method": "expanded-text",
+        "label": "City Island Bronx New York filetype:bitmap",
+        "results": 100
+      },
+      {
+        "method": "expanded-text",
+        "label": "Fordham Bronx New York filetype:bitmap",
+        "results": 100
+      },
+      {
+        "method": "expanded-text",
+        "label": "Riverdale Bronx New York filetype:bitmap",
+        "results": 100
+      },
+      {
+        "method": "expanded-text",
+        "label": "St George Staten Island New York filetype:bitmap",
+        "results": 100
+      },
+      {
+        "method": "expanded-text",
+        "label": "Tottenville Staten Island New York filetype:bitmap",
+        "results": 100
+      },
+      {
+        "method": "expanded-category",
+        "label": "New York City at night",
+        "results": 4
+      },
+      {
+        "method": "expanded-category",
+        "label": "Manhattan at night",
+        "results": 0
+      },
+      {
+        "method": "expanded-category",
+        "label": "Brooklyn at night",
+        "results": 0
+      },
+      {
+        "method": "expanded-category",
+        "label": "Times Square at night",
+        "results": 63
+      },
+      {
+        "method": "expanded-category",
+        "label": "Sunrises in New York City",
+        "results": 0
+      },
+      {
+        "method": "expanded-category",
+        "label": "Coney Island",
+        "results": 1
+      },
+      {
+        "method": "expanded-category",
+        "label": "Staten Island Ferry",
+        "results": 19
+      },
+      {
+        "method": "expanded-category",
+        "label": "Flushing Meadows-Corona Park",
+        "results": 0
+      },
+      {
+        "method": "expanded-category",
+        "label": "City Island, Bronx",
+        "results": 67
+      },
+      {
+        "method": "expanded-category",
+        "label": "Photographs of New York City",
+        "results": 6
+      },
+      {
+        "method": "expanded-geo",
+        "label": "40.8075,-73.945; 1500m",
+        "results": 100
+      },
+      {
+        "method": "expanded-geo",
+        "label": "40.868,-73.922; 1500m",
+        "results": 100
+      },
+      {
+        "method": "expanded-geo",
+        "label": "40.714,-73.998; 1500m",
+        "results": 100
+      },
+      {
+        "method": "expanded-geo",
+        "label": "40.722,-73.981; 1500m",
+        "results": 100
+      },
+      {
+        "method": "expanded-geo",
+        "label": "40.715,-73.96; 1500m",
+        "results": 100
+      },
+      {
+        "method": "expanded-geo",
+        "label": "40.695,-73.92; 1500m",
+        "results": 100
+      },
+      {
+        "method": "expanded-geo",
+        "label": "40.67,-73.963; 1500m",
+        "results": 100
+      },
+      {
+        "method": "expanded-geo",
+        "label": "40.583,-73.984; 1500m",
+        "results": 100
+      },
+      {
+        "method": "expanded-geo",
+        "label": "40.758,-73.831; 1500m",
+        "results": 100
+      },
+      {
+        "method": "expanded-geo",
+        "label": "40.769,-73.921; 1500m",
+        "results": 100
+      },
+      {
+        "method": "expanded-geo",
+        "label": "40.75,-73.884; 1500m",
+        "results": 100
+      },
+      {
+        "method": "expanded-geo",
+        "label": "40.578,-73.84; 1500m",
+        "results": 100
+      },
+      {
+        "method": "expanded-geo",
+        "label": "40.85,-73.882; 1500m",
+        "results": 100
+      },
+      {
+        "method": "expanded-geo",
+        "label": "40.847,-73.788; 1500m",
+        "results": 53
+      },
+      {
+        "method": "expanded-geo",
+        "label": "40.885,-73.91; 1500m",
+        "results": 100
+      },
+      {
+        "method": "expanded-geo",
+        "label": "40.817,-73.921; 1500m",
+        "results": 100
+      },
+      {
+        "method": "expanded-geo",
+        "label": "40.51,-74.252; 1500m",
+        "results": 100
+      },
+      {
+        "method": "expanded-geo",
+        "label": "40.586,-74.077; 1500m",
+        "results": 100
+      },
+      {
+        "method": "expanded-geo",
+        "label": "40.629,-74.105; 1500m",
+        "results": 0
+      },
+      {
+        "method": "expanded-geo",
+        "label": "40.56,-74.135; 1500m",
+        "results": 38
+      }
+    ],
+    "bounded_sample": true
+  },
+  "licenses": {
+    "CC BY-SA 4.0": 2001,
+    "CC BY-SA 3.0": 159,
+    "CC BY 4.0": 634,
+    "CC BY 2.0": 502,
+    "CC BY-SA 2.0": 292,
+    "CC BY 3.0": 72,
+    "CC BY-SA 2.5": 5,
+    "CC0": 116,
+    "Public domain": 88,
+    "CC BY 2.5": 7
+  },
+  "relevance": {
+    "camera_gps_in_nyc": 1326,
+    "commons_location_in_nyc": 1522,
+    "nyc_text_evidence": 1028
+  },
+  "discovery_methods": {
+    "text": 60,
+    "night-text": 107,
+    "category": 40,
+    "geo": 259,
+    "article": 23,
+    "expanded-text": 2023,
+    "expanded-category": 89,
+    "expanded-geo": 1411
+  }
+}

@@ -38,7 +38,7 @@ test('a minute keeps its random order during retries and draws again for a new m
   assert.deepEqual(choose(photos,'2026-10-23',31).map(p=>p.pageid),[1,2,3]);
   assert.deepEqual(createCandidateSelector(()=>.99)(photos,'2026-10-23',30).map(p=>p.pageid),[1,2,3]);
 });
-test('real collection can resolve every minute without inventing capture times',()=>{const {photos}=JSON.parse(readFileSync(new URL('../dist/photos.json',import.meta.url)));assert.equal(photos.length,482);const i=buildIndex(photos);assert.equal(i.size,298);for(let minute=0;minute<1440;minute++){const m=findMoment(i,minute,'2026-10-23');assert.ok(m);assert.equal(m.photos[0].minute,m.minute);assert.ok(m.lag<=86);}for(const p of photos){assert.ok(p.source_url.startsWith('https://commons.wikimedia.org/'));assert.ok(p.thumbnail_url.startsWith('https://'));assert.ok(p.artist||p.attribution||p.credit);assert.ok(p.license);}});
+test('real collection can resolve every minute without inventing capture times',()=>{const {photos}=JSON.parse(readFileSync(new URL('../dist/photos.json',import.meta.url)));assert.ok(photos.length>=482);const i=buildIndex(photos);assert.ok(i.size>=298);for(let minute=0;minute<1440;minute++){const m=findMoment(i,minute,'2026-10-23');assert.ok(m);assert.equal(m.photos[0].minute,m.minute);assert.ok(m.lag<=86);}for(const p of photos){assert.ok(p.source_url.startsWith('https://commons.wikimedia.org/'));assert.ok(p.thumbnail_url.startsWith('https://'));assert.ok(p.artist||p.attribution||p.credit);assert.ok(p.license);}});
 
 test('capture dates match the card format without time-zone shifts',()=>{
   assert.equal(displayCaptureDate('2026-10-12'),'Oct/12/2026');

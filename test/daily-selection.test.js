@@ -58,12 +58,14 @@ test('choosing or failing to load a candidate does not consume it',()=>{
   history.mark(2);
   assert.deepEqual([...history.read()],['2']);
 });
-test('a full day uses every distinct collection photo at most once and stops when exhausted',()=>{
+test('a session uses every distinct collection photo once and stops when exhausted',()=>{
   const {photos}=JSON.parse(readFileSync(new URL('../dist/photos.json',import.meta.url)));
   const index=buildIndex(photos),seen=new Set(),select=createCandidateSelector(()=>.5);
-  for(let minute=0;minute<1440;minute++){
-    const next=unseenCandidates(index,{...state,minute},seen,select).next();
-    if(next.done)continue;
+  const count=new Set(photos.map(p=>String(p.pageid))).size;
+  const start=Date.parse('2026-10-24T04:00:00Z');
+  for(let step=0;step<count;step++){
+    const next=unseenCandidates(index,nyTime(new Date(start+step*60000)),seen,select).next();
+    assert.equal(next.done,false);
     const id=String(next.value.pageid);assert.ok(!seen.has(id));seen.add(id);
   }
   assert.equal(seen.size,new Set(photos.map(p=>String(p.pageid))).size);
