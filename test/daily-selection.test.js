@@ -38,13 +38,37 @@ test('a refresh or separate tab starts with empty history',()=>{
   assert.equal(unseenCandidates(index,state,fresh.read(),choose).next().value.pageid,10);
   fresh.mark(20);assert.deepEqual([...first.read()],['10']);
 });
-test('the same page session keeps its history across New York midnight',()=>{
+test('New York midnight clears history once and makes yesterday\'s photos eligible again',()=>{
   const history=createSessionHistory(),index=buildIndex([photo(1,1439),photo(2,1438)]);
   const before=nyTime(new Date('2026-10-25T03:59:59Z')),after=nyTime(new Date('2026-10-25T04:00:00Z'));
   assert.notEqual(before.date,after.date);
+  assert.equal(history.startDay(before.date),false);
   const first=unseenCandidates(index,before,history.read(),choose).next().value;
   assert.equal(first.pageid,1);history.mark(first.pageid);
-  assert.equal(unseenCandidates(index,after,history.read(),choose).next().value.pageid,2);
+  assert.equal(history.startDay(after.date),true);
+  assert.equal(history.read().size,0);
+  assert.equal(unseenCandidates(index,after,history.read(),choose).next().value.pageid,1);
+  history.mark(1);
+  assert.equal(history.startDay(after.date),false);
+  assert.deepEqual([...history.read()],['1']);
+});
+test('UTC midnight and daylight-saving clock changes do not reset the New York day',()=>{
+  for(const [before,after] of [
+    ['2026-10-25T23:59:59Z','2026-10-26T00:00:00Z'],
+    ['2026-03-08T06:59:59Z','2026-03-08T07:00:00Z'],
+    ['2026-11-01T05:59:59Z','2026-11-01T06:00:00Z']
+  ]){
+    const history=createSessionHistory();history.startDay(nyTime(new Date(before)).date);history.mark(1);
+    assert.equal(history.startDay(nyTime(new Date(after)).date),false);
+    assert.deepEqual([...history.read()],['1']);
+  }
+});
+test('a tab resumed after multiple days resets at its first date check, including EST midnight',()=>{
+  const history=createSessionHistory();history.startDay('2026-10-26');history.mark(1);
+  assert.equal(history.startDay(nyTime(new Date('2026-11-03T04:59:59Z')).date),true);
+  history.mark(2);
+  assert.equal(history.startDay(nyTime(new Date('2026-11-03T05:00:00Z')).date),true);
+  assert.equal(history.read().size,0);
 });
 test('history snapshots cannot mutate the session history',()=>{
   const history=createSessionHistory();history.mark(1);

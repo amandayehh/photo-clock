@@ -14,10 +14,18 @@ export function* unseenCandidates(index,state,seen,choose){
   }
 }
 
-// Each page load owns its history; refreshing or opening another tab starts fresh.
+// History belongs to this page load and resets when the New York calendar date changes.
 export function createSessionHistory(){
   const ids=new Set();
+  let date=null;
   return {
+    startDay(nextDate){
+      if(nextDate===date)return false;
+      const changed=date!==null;
+      date=nextDate;
+      if(changed)ids.clear();
+      return changed;
+    },
     read(){return new Set(ids);},
     mark(id){ids.add(String(id));}
   };

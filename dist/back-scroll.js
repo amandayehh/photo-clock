@@ -1,6 +1,6 @@
 // Read overflowing backs from top to bottom once per flip, then hold the end.
 export function createBackScroll(content,{reducedMotion=()=>false,fontSize=()=>16,onEdges=()=>{},schedule=requestAnimationFrame,cancel=cancelAnimationFrame}={}){
-  let frame=null,started=null,previous=null,position=0;
+  let frame=null,started=null,previous=null,position=0,observer=null;
   function refresh(){
     const end=Math.max(0,content.scrollHeight-content.clientHeight);
     const top=Math.max(0,Math.min(end,content.scrollTop));
@@ -10,7 +10,7 @@ export function createBackScroll(content,{reducedMotion=()=>false,fontSize=()=>1
   content.addEventListener?.('scroll',refresh,{passive:true});
   // Text can reflow after font loading as well as when the card changes size.
   if(typeof ResizeObserver!=='undefined'){
-    const observer=new ResizeObserver(refresh);
+    observer=new ResizeObserver(refresh);
     observer.observe(content);
     for(const child of content.children)observer.observe(child);
   }
@@ -37,5 +37,5 @@ export function createBackScroll(content,{reducedMotion=()=>false,fontSize=()=>1
     previous=now;
     frame=schedule(tick);
   }
-  return {refresh,setActive(active){stop();if(active&&!reducedMotion())frame=schedule(tick);}};
+  return {refresh,setActive(active){stop();if(active&&!reducedMotion())frame=schedule(tick);},destroy(){stop();observer?.disconnect();content.removeEventListener?.('scroll',refresh);}};
 }

@@ -26,12 +26,13 @@ for provenance; GitHub Pages is the active publishing target.
 The bottom clock follows America/New_York, including EDT/EST. Exact capture-minute
 matches are randomly selected. Missing or exhausted minutes search backward for
 an unseen photo, wrapping midnight. History is per open page session and clears
-on refresh. If every photograph has been shown, the current one stays. Failed
+on refresh. At New York midnight, both the cards and history reset for a fresh day;
+a sleeping tab resets when it resumes. If every photograph has been shown, the current one stays until the reset. Failed
 images try alternatives and are retried after a minute.
 
 Cards preserve equal photographic area across aspect ratios, stack in arrival
 order, and animate for one second. Grid view chooses between three and eight columns from viewport width, targeting
-roughly 180 pixels per column including gutters to keep card sizes consistent. Hold still for 0.6 seconds to show metadata; releasing restores
+roughly 180 pixels per column including gutters to keep card sizes consistent. Hold still for 0.3 seconds to show metadata; releasing restores
 the front. Overflowing backs scroll to the end. Drag toward the Learn more edge
 and release to open the original Commons page. Space holds details, arrow keys
 move the card, and Enter opens full credits. Reduced-motion preferences disable

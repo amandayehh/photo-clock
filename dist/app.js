@@ -22,11 +22,23 @@ const linkDropTarget=createLinkDropTarget($('link-drop-target'),url=>window.open
 let index=new Map(),photos=[],cards=[],current=null,activeKey='',busy=false,generation=0,retryAt=0,lastClock='';
 let gridMode=false;
 const failed=new Set();
-const chooseCandidates=createCandidateSelector();
+let chooseCandidates=createCandidateSelector();
 const shownThisSession=createSessionHistory();
 let displayedKey='';
 function updateCardLayers(){
   for(const entry of cards)entry.element.style.zIndex=String(entry.flipped?cards.length+1:entry.sequence+1);
+}
+function resetCards(){
+  // Invalidate yesterday's pending image request before clearing the displayed collection.
+  generation++;busy=false;activeKey=displayedKey='';retryAt=0;failed.clear();
+  chooseCandidates=createCandidateSelector();
+  releaseHeldCard();viewMotion.finish();linkDropTarget.hide();
+  for(const entry of cards){entry.animation?.cancel();entry.backScroll.destroy();}
+  cards=[];current=null;
+  $('pile').replaceChildren();$('pile').scrollTop=0;
+  document.body.classList.remove('card-pressed');
+  if($('credits').open)$('credits').close();
+  $('status').hidden=true;$('retry').hidden=true;
 }
 function viewport(){return {width:window.innerWidth,height:window.innerHeight};}
 function updateClock(){const state=nyTime(),t=displayTime(state.minute),text=`${t.clock} ${t.period} ${state.timeZone}`;if(lastClock!==text){document.title=text;$('clock').textContent=text;$('clock').setAttribute('aria-label',`${text}, New York time`);lastClock=text;}return state;}
@@ -153,8 +165,11 @@ function printPhoto(photo,img){
 }
 function loadImage(url){return new Promise((resolve,reject)=>{const img=new Image();const timeout=setTimeout(()=>{img.onload=img.onerror=null;reject(new Error('Image timeout'));},10000);img.onload=()=>{clearTimeout(timeout);resolve(img);};img.onerror=()=>{clearTimeout(timeout);reject(new Error('Image unavailable'));};img.referrerPolicy='no-referrer';img.src=url;});}
 async function refresh(force=false){
+  const state=updateClock();
+  // Check before the busy guard so an in-flight request cannot delay the midnight reset.
+  if(shownThisSession.startDay(state.date))resetCards();
   if(!index.size||busy&&!force)return;
-  const state=updateClock(),key=`${state.date}|${state.minute}`;
+  const key=`${state.date}|${state.minute}`;
   if(key===displayedKey||!force&&key===activeKey)return;
   activeKey=key;
   const token=++generation;busy=true;let attempts=0,eligible=0;
@@ -173,7 +188,7 @@ async function refresh(force=false){
       printPhoto(photo,img);
       shownThisSession.mark(photo.pageid);
       displayedKey=key;busy=false;retryAt=0;return;
-    }catch{failed.add(photo.pageid);}
+    }catch{if(token!==generation)return;failed.add(photo.pageid);}
   }
   if(token!==generation)return;
   busy=false;retryAt=eligible?Date.now()+60000:0;

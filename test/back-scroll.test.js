@@ -38,6 +38,15 @@ test('backs that fit show neither fade',()=>{
   const h=setup({height:80,viewport:100});h.controller.setActive(true);
   assert.deepEqual(h.edges(),{top:false,bottom:false});
 });
+test('disposing a removed card stops its animation and scroll listener',()=>{
+  const h=setup();h.controller.setActive(true);
+  assert.equal(h.pending(),true);
+  h.controller.destroy();
+  assert.equal(h.pending(),false);
+  const edges=h.edges();
+  h.content.scrollTop=80;h.content.dispatchEvent(new Event('scroll'));
+  assert.equal(h.edges(),edges);
+});
 test('releasing stops scrolling and the next flip starts at the beginning',()=>{
   const h=setup();h.controller.setActive(true);
   for(let now=0;now<=2000;now+=100)h.step(now);

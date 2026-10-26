@@ -5,6 +5,7 @@ export function createLinkDropTarget(element,openLink){
   }
   function hide(){element.classList.remove('visible','over');}
   return {
+    hide,
     show(point){
       element.classList.add('visible');
       element.classList.toggle('over',contains(point));
