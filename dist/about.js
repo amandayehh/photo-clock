@@ -15,8 +15,8 @@ export function collectionUpdate(data){
   return null;
 }
 
-export function bindAboutPanel(button,panel,document){
-  function setOpen(open){panel.hidden=!open;button.setAttribute('aria-expanded',String(open));}
+export function bindAboutPanel(button,panel,document,onOpen=()=>{}){
+  function setOpen(open){panel.hidden=!open;button.setAttribute('aria-expanded',String(open));if(open)onOpen();}
   button.addEventListener('click',()=>setOpen(panel.hidden));
   document.addEventListener('pointerdown',event=>{
     if(!panel.hidden&&!panel.contains(event.target)&&!button.contains(event.target)){

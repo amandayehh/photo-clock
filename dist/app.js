@@ -1,4 +1,4 @@
-import {applySmoothing} from './smoothing.js';
+import {applySmoothing,smoothSurface} from './smoothing.js';
 import {bindAboutPanel,collectionUpdate} from './about.js';
 import {createBackScroll} from './back-scroll.js';
 import {bindCardInteraction,releaseHeldCard} from './interaction.js';
@@ -9,7 +9,13 @@ import {unseenCandidates,createSessionHistory} from './daily-selection.js';
 import {nyTime,displayTime,displayCaptureDate,displayLocation,photoMetadataRows,buildIndex,createCandidateSelector} from './core.js';
 import {cleanTitle,stackLayout,imageDimensions,landingPose,entranceFrames,entranceTiming} from './stack.js';
 const $=id=>document.getElementById(id);
-bindAboutPanel($('about-toggle'),$('about-panel'),document);
+function updateAboutSurface(){
+  const panel=$('about-panel');if(panel.hidden)return;
+  const radius=parseFloat(getComputedStyle(document.body).getPropertyValue('--photo-radius'))||stackLayout(window.innerWidth,window.innerHeight,[]).radius;
+  panel.style.setProperty('--panel-surface',smoothSurface(panel.offsetWidth,panel.offsetHeight,radius,'#282828'));
+}
+bindAboutPanel($('about-toggle'),$('about-panel'),document,updateAboutSurface);
+new ResizeObserver(updateAboutSurface).observe($('about-panel'));
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
 const viewMotion=createViewMotion();
 const linkDropTarget=createLinkDropTarget($('link-drop-target'),url=>window.open(url,'_blank','noopener,noreferrer'));
@@ -33,6 +39,8 @@ function layoutCards(){
   $('pile').style.setProperty('--grid-columns',gridColumns(v.width));
   const widths=gridMode?cards.map(entry=>entry.slot.getBoundingClientRect().width):[];
   const layout=gridMode?gridLayout(widths.length?Math.min(...widths):1,cards.map(entry=>entry.ratio)):stack;
+  document.body.style.setProperty('--photo-radius',`${layout.radius}px`);
+  updateAboutSurface();
   for(const entry of cards){
     entry.animation?.cancel();entry.animation=null;entry.element.classList.remove('arriving');
     const size=imageDimensions(layout.area,entry.ratio);

@@ -20,8 +20,10 @@
     <div class="about-control">
       <button id="about-toggle" class="about-toggle" type="button" aria-label="About photo-clock" aria-expanded="false" aria-controls="about-panel"><img src="icons/circle-question.svg" width="16" height="16" alt=""></button>
       <section id="about-panel" class="about-panel" aria-label="About photo-clock" hidden>
-        <p>A clock that shows a photo taken at the current time in NYC.</p>
-        <p class="about-source">Photographs are sourced from <a href="https://commons.wikimedia.org/" target="_blank" rel="noopener noreferrer">Wikimedia Commons.</a><span id="about-updated" hidden> Last updated on <time id="collection-updated"></time>.</span></p>
+        <div class="about-content">
+          <p>A clock that shows a photo taken at the current time in NYC.</p>
+          <p class="about-source">Photographs are sourced from <a href="https://commons.wikimedia.org/" target="_blank" rel="noopener noreferrer">Wikimedia Commons.</a><span id="about-updated" hidden> Last updated on <time id="collection-updated"></time>.</span></p>
+        </div>
       </section>
     </div>
     <button id="retry" class="retry" hidden>Try again</button>
