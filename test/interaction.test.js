@@ -59,10 +59,10 @@ test('keyboard users can hold to flip, move, release, and access full credits',(
   card.send('click',{detail:0});assert.equal(state.details,1);
 });
 
-test('holding still flips at exactly 0.6 seconds and release flips back',t=>{
+test('holding still flips at exactly 0.3 seconds and release flips back',t=>{
   t.mock.timers.enable({apis:['setTimeout']});
   const {card,state}=setup();card.send('pointerdown',down);
-  t.mock.timers.tick(599);assert.equal(state.held,false);
+  t.mock.timers.tick(299);assert.equal(state.held,false);
   t.mock.timers.tick(1);assert.equal(state.held,true);
   card.send('pointerup',down);assert.equal(state.held,false);
 });
@@ -76,7 +76,7 @@ test('a quick click never flips later',t=>{
 test('dragging an already flipped card keeps its back visible until mouse up',t=>{
   t.mock.timers.enable({apis:['setTimeout']});
   const {card,state}=setup();card.send('pointerdown',down);
-  t.mock.timers.tick(600);assert.equal(state.held,true);
+  t.mock.timers.tick(300);assert.equal(state.held,true);
   card.send('pointermove',{pointerId:1,clientX:180,clientY:220});
   t.mock.timers.tick(1000);
   assert.deepEqual([state.x,state.y,state.held],[80,120,true]);

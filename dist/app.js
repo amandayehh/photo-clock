@@ -100,7 +100,7 @@ function printPhoto(photo,img){
   if(current?.pageid===photo.pageid)return;
   const card=document.createElement('button');card.type='button';card.className='card';
   const title=cleanTitle(photo.title);
-  card.setAttribute('aria-label',`${title}. Hold still for 0.6 seconds to flip. Drag to the right edge and release to open Wikimedia in a new tab; release elsewhere to return. Keyboard: hold Space for details, arrow keys to move, Enter for full credits and source link.`);
+  card.setAttribute('aria-label',`${title}. Hold still for 0.3 seconds to flip. Drag to the right edge and release to open Wikimedia in a new tab; release elsewhere to return. Keyboard: hold Space for details, arrow keys to move, Enter for full credits and source link.`);
   card.setAttribute('aria-pressed','false');
   const flipper=document.createElement('span');flipper.className='card-flipper';
   const front=document.createElement('span');front.className='card-front';
