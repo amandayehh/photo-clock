@@ -1,8 +1,6 @@
 @font-face{font-family:"Suisse Int'l";src:url("fonts/SuisseIntl-Regular.otf") format("opentype");font-weight:400;font-style:normal;font-display:swap}
 :root{color-scheme:dark;font-family:"Suisse Int'l",Arial,Helvetica,sans-serif;font-weight:400;background:#131313;color:#fff;font-synthesis:none}*{box-sizing:border-box}body{margin:0;overflow:hidden}button,a{-webkit-tap-highlight-color:transparent}button{font:inherit;cursor:pointer}[hidden]{display:none!important}main,.pile{position:fixed;inset:0}.pile{isolation:isolate;pointer-events:none}.card{position:absolute;left:50%;top:50%;margin:0;border:0;padding:var(--pad);border-radius:var(--radius);background:#fff;color:#282828;box-shadow:0 4px 30px rgb(0 0 0 / .4);text-align:left;display:flex;flex-direction:column;gap:var(--gap);pointer-events:auto;transform-origin:center;opacity:1;will-change:auto;-webkit-user-select:none;user-select:none}.card.arriving{will-change:transform;pointer-events:none}.card:focus,.card:focus-visible{outline:none}.card-title{display:block;font-size:var(--title-size);font-weight:400;line-height:1.15;white-space:nowrap;text-overflow:ellipsis;margin:0;overflow:hidden}.card-image{display:block;width:100%;height:var(--image-height);object-fit:contain;border-radius:calc(var(--radius) / 2);pointer-events:none}.clock{position:fixed;bottom:max(5.2vh,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);font-size:clamp(20px,3.68vmin,40px);font-weight:400;line-height:1.2;white-space:nowrap;font-variant-numeric:tabular-nums;z-index:2;pointer-events:auto;cursor:text;-webkit-user-select:text;user-select:text}.status{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(80vw,440px);margin:0;color:#aaa;font-size:14px;line-height:1.6;text-align:center;pointer-events:none}.retry{position:fixed;left:50%;top:58%;transform:translateX(-50%);border:0;background:none;color:#ddd;text-decoration:underline;text-underline-offset:5px;font-size:13px;z-index:3}dialog{width:min(520px,calc(100% - 40px));max-height:80vh;overflow:auto;background:#fafafa;color:#282828;border:0;border-radius:10px;padding:36px;box-shadow:0 20px 80px #0008}dialog::backdrop{background:#0009}dialog h1{font-size:22px;font-weight:400;line-height:1.35;padding-right:20px;margin:0 0 20px}dialog p{font-size:13px;line-height:1.7;overflow-wrap:anywhere}dialog a{color:inherit;text-underline-offset:4px}.close{position:absolute;right:13px;top:8px;background:none;border:0;color:#444;font-size:28px;font-weight:400}.links{display:flex;gap:20px;flex-wrap:wrap}.muted{color:#777}.small{font-size:11px;border-top:1px solid #ddd;padding-top:16px;margin-top:22px}button:focus-visible,a:focus-visible{outline:2px solid #aaa;outline-offset:5px}@media(prefers-reduced-motion:reduce){.card{will-change:auto}}
 
-/* Temporary animation preview control. */
-
 /* Translation belongs to the outer card; the inner faces handle the flip. */
 .card{padding:0;background:transparent;box-shadow:none;display:block;perspective:1400px;touch-action:none;cursor:grab}
 .card-flipper{position:relative;display:grid;grid-template-columns:minmax(0,1fr);transform-style:preserve-3d;transition:transform 420ms cubic-bezier(.2,.7,.2,1);pointer-events:none}
@@ -36,7 +34,7 @@ body.card-pressed,body.card-pressed *{cursor:grabbing!important}
 /* At the reference 9px metadata font: 300px maximum width and 8px gaps. */
 .card-metadata{display:grid;grid-template-columns:minmax(0,23%) minmax(0,1fr);gap:calc(8em / 9);margin-top:auto;width:100%;max-width:calc(300em / 9);align-self:flex-start;font-size:var(--stamp-size);font-weight:400;line-height:1.5;text-align:left}
 .metadata-label{color:#999}.metadata-value{color:#282828;white-space:pre-line;overflow-wrap:anywhere}
-.metadata-description{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;line-clamp:3;overflow:hidden;max-height:3lh}
+.metadata-description{display:block}
 
 .card-stamp,.card-metadata{letter-spacing:.01em}
 
@@ -46,7 +44,8 @@ body.card-pressed,body.card-pressed *{cursor:grabbing!important}
 .card-back{overflow:visible;padding:0}
 .card-front::before,.card-back::before{content:"";position:absolute;inset:0;background-image:var(--card-surface);background-size:100% 100%;background-repeat:no-repeat;filter:drop-shadow(0 4px 15px rgb(0 0 0 / .4));z-index:-1;pointer-events:none}
 .card-image{border-radius:0}
-.card-back>.back-content{position:absolute;inset:var(--pad);display:flex;flex-direction:column;gap:calc(var(--pad) * 2);min-height:0;overflow:auto}
+.card-back>.back-content{position:absolute;inset:var(--pad);display:flex;flex-direction:column;gap:calc(var(--pad) * 2);min-height:0;overflow:auto;scrollbar-width:none;overscroll-behavior:contain}
+.back-content::-webkit-scrollbar{display:none}
 .back-content>span{flex-shrink:0}
 /* Match the bottom text's leading to the front timestamp. */
 .card-metadata>.metadata-label:nth-last-child(2),.card-metadata>.metadata-value:last-child{line-height:1.15}

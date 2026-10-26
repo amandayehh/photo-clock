@@ -1,4 +1,5 @@
 import {applySmoothing} from './smoothing.js';
+import {createBackScroll} from './back-scroll.js';
 import {bindCardInteraction,releaseHeldCard} from './interaction.js';
 import {createLinkDropTarget} from './drag-target.js';
 import {gridColumns,gridLayout,cardTransform} from './grid.js';
@@ -111,6 +112,7 @@ function printPhoto(photo,img){
     metadata.append(term,detail);
   }
   if(metadata.childElementCount)backContent.append(metadata);
+  const backScroll=createBackScroll(backContent,{reducedMotion:()=>reducedMotion.matches,fontSize:()=>parseFloat(getComputedStyle(metadata).fontSize)||16});
   const slot=document.createElement('div');slot.className='photo-slot';
   flipper.append(front,back);card.append(flipper);slot.append(card);$('pile').append(slot);
   const entry={element:card,slot,front,image:img,photo,title,ratio:photo.width/photo.height,sequence:cards.length,flipped:false,pose:null,position:null,animation:null};
@@ -125,7 +127,7 @@ function printPhoto(photo,img){
     },
     onDrag:point=>linkDropTarget.show(point),
     onRelease:gesture=>{returnCard(entry);linkDropTarget.release(photo.source_url,gesture);},
-    onFlip:held=>{entry.flipped=held;updateCardLayers();card.classList.toggle('held',held);card.setAttribute('aria-pressed',String(held));front.setAttribute('aria-hidden',String(held));back.setAttribute('aria-hidden',String(!held));},
+    onFlip:held=>{entry.flipped=held;updateCardLayers();card.classList.toggle('held',held);card.setAttribute('aria-pressed',String(held));front.setAttribute('aria-hidden',String(held));back.setAttribute('aria-hidden',String(!held));backScroll.setActive(held);},
     onDetails:()=>showCredits(photo)
   });
   cards.push(entry);updateCardLayers();current=photo;layoutCards();$('status').hidden=true;$('retry').hidden=true;
