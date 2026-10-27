@@ -17,3 +17,19 @@ test('arrival layers remain unchanged through Grid, Stack trimming and DOM reord
   entries[2].flipped=false;applyCardLayers(entries);
   assert.deepEqual(entries.map(entry=>entry.element.style.zIndex),original);
 });
+
+test('a pressed card is immediately on top before flipping and restores its layer on release',()=>{
+  const entries=[10,11,12,13,14].map(sequence=>({sequence,pressed:false,flipped:false,element:{style:{}}}));
+  const held=entries[0];
+  held.pressed=true;applyCardLayers(entries);
+  assert.equal(held.element.style.zIndex,'16');
+  // A new arrival must not cover the card being dragged.
+  entries.push({sequence:15,element:{style:{}}});applyCardLayers(entries);
+  assert.equal(held.element.style.zIndex,'17');
+  held.flipped=true;applyCardLayers(entries);
+  assert.equal(held.element.style.zIndex,'17');
+  held.flipped=false;applyCardLayers(entries);
+  assert.equal(held.element.style.zIndex,'17');
+  held.pressed=false;applyCardLayers(entries);
+  assert.equal(held.element.style.zIndex,'11');
+});

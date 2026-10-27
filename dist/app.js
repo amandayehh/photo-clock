@@ -179,9 +179,9 @@ function createCard(photo,sequence,img){
   });
   const slot=document.createElement('div');slot.className='photo-slot';
   flipper.append(front,back);card.append(flipper);slot.append(card);$('pile').append(slot);
-  const entry={element:card,slot,front,image:img,backScroll,photo,title,ratio:photo.width/photo.height,sequence,flipped:false,pose:null,position:null,animation:null};
+  const entry={element:card,slot,front,image:img,backScroll,photo,title,ratio:photo.width/photo.height,sequence,pressed:false,flipped:false,pose:null,position:null,animation:null};
   entry.interaction=bindCardInteraction(card,{
-    onPress:pressed=>{document.body.classList.toggle('card-pressed',pressed);card.classList.toggle('pressed',pressed);},
+    onPress:pressed=>{entry.pressed=pressed;updateCardLayers();document.body.classList.toggle('card-pressed',pressed);card.classList.toggle('pressed',pressed);},
     onLift:()=>{entry.animation?.cancel();entry.animation=null;card.classList.remove('arriving');},
     onMove:(dx,dy)=>{
       // Keep the card's center within the window while dragging.
