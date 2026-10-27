@@ -74,6 +74,7 @@ function layoutCards(){
   const widths=gridMode?cards.map(entry=>entry.slot.getBoundingClientRect().width):[];
   const layout=gridMode?gridLayout(widths.length?Math.min(...widths):1,$('pile').clientHeight):stack;
   document.body.style.setProperty('--photo-radius',`${layout.radius}px`);
+  document.body.style.setProperty('--stamp-size',`${layout.stampSize}px`);
   updateAboutSurface();
   for(const entry of cards){
     entry.animation?.cancel();entry.animation=null;entry.element.classList.remove('arriving');
