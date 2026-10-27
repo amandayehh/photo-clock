@@ -190,7 +190,7 @@ function createCard(photo,sequence,img){
       entry.position=gridMode?moved:constrainStackPosition(moved);
       entry.pose=entry.position;card.style.transform=cardTransform(entry.pose,gridMode);
     },
-    onDrag:point=>linkDropTarget.show(point),
+    onDrag:point=>linkDropTarget.show(point,card.getBoundingClientRect()),
     onRelease:gesture=>{returnCard(entry);linkDropTarget.release(photo.source_url,gesture);},
     onFlip:held=>{entry.flipped=held;updateCardLayers();card.classList.toggle('held',held);card.setAttribute('aria-pressed',String(held));front.setAttribute('aria-hidden',String(held));back.setAttribute('aria-hidden',String(!held));backScroll.setActive(held);},
     onDetails:()=>showCredits(photo)

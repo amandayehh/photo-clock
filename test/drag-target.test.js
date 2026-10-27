@@ -36,6 +36,19 @@ test('approaching the panel brightens it without making outside drops open a lin
   target.release(source,{dragging:true,cancelled:false,x:880,y:300});
   assert.equal(opened.length,0);assert.equal(classes.size,0);
 });
+test('the image edge triggers full opacity even when the cursor is far from the strip',()=>{
+  for(const portrait of [false,true]){
+    const {target,classes,opened}=setup(portrait);
+    const point=portrait?{x:200,y:500}:{x:650,y:300};
+    const near=portrait?{left:100,right:300,top:350,bottom:680}:{left:500,right:880,top:200,bottom:400};
+    const far=portrait?{...near,bottom:650}:{...near,right:850};
+    target.show(point,far);assert.ok(!classes.has('over'));
+    target.show(point,near);assert.ok(classes.has('over'));
+    target.show(point,far);assert.ok(!classes.has('over'));
+    target.release(source,{...point,dragging:true,cancelled:false});
+    assert.equal(opened.length,0);assert.equal(classes.size,0);
+  }
+});
 test('outside drops, clicks, cancellations and invalid source links never open a tab',()=>{
   const invalid=[
     [source,{x:899}], [source,{x:1001}], [source,{y:-1}], [source,{y:801}],
