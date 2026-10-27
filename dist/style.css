@@ -33,6 +33,13 @@ body.card-pressed,body.card-pressed *{cursor:grabbing!important}
 .link-drop-content span{writing-mode:vertical-rl;white-space:nowrap;font-size:var(--clock-size);font-weight:400;line-height:1.2;letter-spacing:0}
 .link-drop-target.over .link-drop-content{opacity:1}
 body:has(.link-drop-target.visible) .about-control{visibility:hidden}
+@media(orientation:portrait){
+  .link-drop-target{inset:auto 0 0;width:auto;height:clamp(96px,14vh,280px)}
+  .link-drop-content{top:auto;bottom:var(--page-padding);left:var(--page-padding);flex-direction:row-reverse;align-items:center;justify-content:space-between}
+  .link-drop-content span{writing-mode:horizontal-tb}
+  body:has(.link-drop-target.visible) .clock{visibility:hidden}
+  body:has(.link-drop-target.visible) .about-control{visibility:visible}
+}
 @media(prefers-reduced-motion:reduce){.link-drop-target,.link-drop-target::before,.link-drop-content{transition:none}}
 
 .card-back{gap:calc(var(--pad) * 2)}

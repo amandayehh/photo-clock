@@ -3,13 +3,13 @@ import assert from 'node:assert/strict';
 import {createLinkDropTarget} from '../dist/drag-target.js';
 
 const source='https://commons.wikimedia.org/wiki/File:Midtown.jpg';
-function setup(){
+function setup(portrait=false){
   const classes=new Set(),opened=[];
   const element={
     classList:{add:(...names)=>names.forEach(n=>classes.add(n)),remove:(...names)=>names.forEach(n=>classes.delete(n)),toggle:(n,on)=>on?classes.add(n):classes.delete(n)},
-    getBoundingClientRect:()=>({left:900,right:1000,top:0,bottom:800})
+    getBoundingClientRect:()=>portrait?{left:0,right:400,top:700,bottom:800}:{left:900,right:1000,top:0,bottom:800}
   };
-  return {target:createLinkDropTarget(element,url=>opened.push(url)),classes,opened};
+  return {target:createLinkDropTarget(element,url=>opened.push(url),{isPortrait:()=>portrait}),classes,opened};
 }
 test('drag shows the edge, highlights on approach, and opens once on an inside drop',()=>{
   const {target,classes,opened}=setup();
@@ -17,6 +17,16 @@ test('drag shows the edge, highlights on approach, and opens once on an inside d
   target.show({x:950,y:300});assert.ok(classes.has('over'));assert.equal(opened.length,0);
   target.show({x:600,y:300});assert.ok(!classes.has('over'));
   target.release(source,{dragging:true,cancelled:false,x:950,y:300});
+  assert.deepEqual(opened,[source]);assert.equal(classes.size,0);
+});
+test('portrait strip highlights from above and opens only on a drop inside the bottom strip',()=>{
+  const {target,classes,opened}=setup(true);
+  target.show({x:200,y:667});assert.ok(!classes.has('over'));
+  target.show({x:200,y:668});assert.ok(classes.has('over'));
+  target.release(source,{dragging:true,cancelled:false,x:200,y:680});
+  assert.equal(opened.length,0);
+  target.show({x:200,y:750});assert.ok(classes.has('over'));
+  target.release(source,{dragging:true,cancelled:false,x:200,y:750});
   assert.deepEqual(opened,[source]);assert.equal(classes.size,0);
 });
 test('approaching the panel brightens it without making outside drops open a link',()=>{

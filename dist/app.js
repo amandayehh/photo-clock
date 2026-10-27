@@ -21,7 +21,7 @@ bindAboutPanel($('about-toggle'),$('about-panel'),document,updateAboutSurface);
 new ResizeObserver(updateAboutSurface).observe($('about-panel'));
 const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
 const viewMotion=createViewMotion();
-const linkDropTarget=createLinkDropTarget($('link-drop-target'),url=>window.open(url,'_blank','noopener,noreferrer'));
+const linkDropTarget=createLinkDropTarget($('link-drop-target'),url=>window.open(url,'_blank','noopener,noreferrer'),{isPortrait:()=>matchMedia('(orientation: portrait)').matches});
 let index=new Map(),photos=[],cards=[],current=null,activeKey='',busy=false,generation=0,retryAt=0,lastClock='';
 let gridMode=false;
 let latestPhotoMoment=null;
@@ -147,7 +147,7 @@ function createCard(photo,sequence,img){
   if(!img){img=new Image();img.loading='lazy';img.decoding='async';img.referrerPolicy='no-referrer';img.src=photo.thumbnail_url;}
   const card=document.createElement('button');card.type='button';card.className='card';
   const title=cleanTitle(photo.title);
-  card.setAttribute('aria-label',`${title}. Hold still for 0.3 seconds to flip. Drag to the right edge and release to open Wikimedia in a new tab; release elsewhere to return. Keyboard: hold Space for details, arrow keys to move, Enter for full credits and source link.`);
+  card.setAttribute('aria-label',`${title}. Hold still for 0.3 seconds to flip. Drag to the Learn More area and release to open Wikimedia in a new tab; release elsewhere to return. Keyboard: hold Space for details, arrow keys to move, Enter for full credits and source link.`);
   card.setAttribute('aria-pressed','false');
   const flipper=document.createElement('span');flipper.className='card-flipper';
   const front=document.createElement('span');front.className='card-front';

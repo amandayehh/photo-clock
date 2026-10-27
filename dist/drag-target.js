@@ -1,7 +1,8 @@
-export function createLinkDropTarget(element,openLink){
+export function createLinkDropTarget(element,openLink,{isPortrait=()=>false}={}){
   function contains({x,y},approach=0){
     const bounds=element.getBoundingClientRect();
-    return x>=bounds.left-approach&&x<=bounds.right&&y>=bounds.top&&y<=bounds.bottom;
+    const left=bounds.left-(isPortrait()?0:approach),top=bounds.top-(isPortrait()?approach:0);
+    return x>=left&&x<=bounds.right&&y>=top&&y<=bounds.bottom;
   }
   function hide(){element.classList.remove('visible','over');}
   return {
