@@ -12,12 +12,20 @@ function setup({height=300,viewport=100,reduced=false}={}){
   });
   return {content,controller,edges:()=>edges,pending:()=>callback!==null,step:time=>{const fn=callback;callback=null;fn?.(time);}};
 }
-test('overflow waits for reading, scrolls through the full back and holds at the end',()=>{
+test('overflow waits for reading then repeatedly reverses at the bottom and top',()=>{
   const h=setup();h.controller.setActive(true);h.step(0);h.step(1300);
   assert.equal(h.content.scrollTop,0);
-  for(let now=1400;now<15000;now+=100)h.step(now);
-  assert.equal(h.content.scrollTop,200);assert.equal(h.pending(),false);
+  for(let now=1400;now<=3800;now+=100)h.step(now);
+  assert.equal(h.content.scrollTop,200);assert.equal(h.pending(),true);
   assert.deepEqual(h.edges(),{top:true,bottom:false});
+  h.step(3900);assert.equal(h.content.scrollTop,192);
+  assert.deepEqual(h.edges(),{top:true,bottom:true});
+  for(let now=4000;now<=6300;now+=100)h.step(now);
+  assert.equal(h.content.scrollTop,0);assert.equal(h.pending(),true);
+  assert.deepEqual(h.edges(),{top:false,bottom:true});
+  h.step(6400);assert.equal(h.content.scrollTop,8);
+  for(let now=6500;now<=8800;now+=100)h.step(now);
+  assert.equal(h.content.scrollTop,200);assert.equal(h.pending(),true);
 });
 test('fades indicate only clipped edges during manual scrolling, resizing and repeat flips',()=>{
   const h=setup({reduced:true});
@@ -63,13 +71,19 @@ test('content that fits and reduced motion do not animate',()=>{
   }
 });
 
-for(const font of [3,16])test(`rounded scrolling reaches the end at ${font}px metadata size`,()=>{
+for(const font of [3,16])test(`rounded scrolling reverses at both ends at ${font}px metadata size`,()=>{
   let stored=0,callback=null;
   const content={scrollHeight:130,clientHeight:100,get scrollTop(){return stored;},set scrollTop(value){stored=Math.floor(value);}};
   const controller=createBackScroll(content,{fontSize:()=>font,schedule:fn=>{callback=fn;return 1;},cancel:()=>{callback=null;}});
   controller.setActive(true);
   // Small grid fonts and high refresh rates must still accumulate movement.
-  for(let now=0;now<15000&&callback;now+=1000/120){const fn=callback;callback=null;fn(now);}
-  assert.equal(content.scrollTop,30);
-  assert.equal(callback,null);
+  let reachedBottom=false,returnedToTop=false,descendedAgain=false;
+  for(let now=0;now<15000&&callback;now+=1000/120){
+    const fn=callback;callback=null;fn(now);
+    if(content.scrollTop===30)reachedBottom=true;
+    if(reachedBottom&&content.scrollTop===0)returnedToTop=true;
+    if(returnedToTop&&content.scrollTop>0)descendedAgain=true;
+  }
+  assert.equal(reachedBottom,true);assert.equal(returnedToTop,true);assert.equal(descendedAgain,true);
+  assert.notEqual(callback,null);
 });

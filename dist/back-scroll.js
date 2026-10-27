@@ -1,6 +1,6 @@
-// Read overflowing backs from top to bottom once per flip, then hold the end.
+// Read overflowing backs back and forth while the card remains flipped.
 export function createBackScroll(content,{reducedMotion=()=>false,fontSize=()=>16,onEdges=()=>{},schedule=requestAnimationFrame,cancel=cancelAnimationFrame}={}){
-  let frame=null,started=null,previous=null,position=0,observer=null;
+  let frame=null,started=null,previous=null,position=0,direction=1,observer=null;
   function refresh(){
     const end=Math.max(0,content.scrollHeight-content.clientHeight);
     const top=Math.max(0,Math.min(end,content.scrollTop));
@@ -16,7 +16,7 @@ export function createBackScroll(content,{reducedMotion=()=>false,fontSize=()=>1
   }
   function stop(){
     if(frame!==null)cancel(frame);
-    frame=null;started=previous=null;position=0;content.scrollTop=0;
+    frame=null;started=previous=null;position=0;direction=1;content.scrollTop=0;
     refresh();
   }
   function tick(now){
@@ -29,9 +29,10 @@ export function createBackScroll(content,{reducedMotion=()=>false,fontSize=()=>1
     if(now-started>=1400){
       const elapsed=previous===null?0:Math.min(now-previous,100);
       // Keep fractional progress independently: some browsers round scrollTop writes.
-      position=Math.min(end,position+elapsed*Math.max(1,fontSize())*4/1000);
+      position=Math.max(0,Math.min(end,position+direction*elapsed*Math.max(1,fontSize())*4/1000));
       content.scrollTop=position;
-      if(position>=end){content.scrollTop=end;refresh();return;}
+      if(position>=end)direction=-1;
+      else if(position<=0)direction=1;
       refresh();
     }
     previous=now;
