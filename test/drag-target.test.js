@@ -11,13 +11,20 @@ function setup(){
   };
   return {target:createLinkDropTarget(element,url=>opened.push(url)),classes,opened};
 }
-test('drag shows the edge, highlights only inside it, and opens once on drop',()=>{
+test('drag shows the edge, highlights on approach, and opens once on an inside drop',()=>{
   const {target,classes,opened}=setup();
   target.show({x:500,y:300});assert.ok(classes.has('visible'));assert.ok(!classes.has('over'));
   target.show({x:950,y:300});assert.ok(classes.has('over'));assert.equal(opened.length,0);
   target.show({x:600,y:300});assert.ok(!classes.has('over'));
   target.release(source,{dragging:true,cancelled:false,x:950,y:300});
   assert.deepEqual(opened,[source]);assert.equal(classes.size,0);
+});
+test('approaching the panel brightens it without making outside drops open a link',()=>{
+  const {target,classes,opened}=setup();
+  target.show({x:867,y:300});assert.ok(!classes.has('over'));
+  target.show({x:868,y:300});assert.ok(classes.has('over'));
+  target.release(source,{dragging:true,cancelled:false,x:880,y:300});
+  assert.equal(opened.length,0);assert.equal(classes.size,0);
 });
 test('outside drops, clicks, cancellations and invalid source links never open a tab',()=>{
   const invalid=[

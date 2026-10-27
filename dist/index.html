@@ -6,14 +6,14 @@
   <meta name="theme-color" content="#131313">
   <meta name="description" content="New York time, one photograph at a time.">
   <title>photo-clock</title>
-  <link rel="icon" href="favicon.png?v=789e0149" type="image/png" sizes="240x240">
+  <link rel="icon" href="favicon.png?v=d19b7ca7" type="image/png" sizes="240x240">
   <link rel="preload" href="fonts/SuisseIntl-Regular.otf" as="font" type="font/otf" crossorigin>
   <link rel="stylesheet" href="style.css">
   <script type="module" src="app.js"></script>
 </head>
 <body>
   <main aria-label="New York photographic clock">
-    <div id="link-drop-target" class="link-drop-target" aria-hidden="true"><span>Learn more</span></div>
+    <div id="link-drop-target" class="link-drop-target" aria-hidden="true"><div class="link-drop-content"><svg class="link-drop-arrow" width="57" height="57" viewBox="0 0 57 57" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0.353516 55.9719L55.8254 0.5M0.353516 0.5H55.8254V55.9719" stroke="white"/></svg><span>Learn more</span></div></div>
     <div id="pile" class="pile" aria-label="Photographs collected as time passes"></div>
     <p id="status" class="status" role="status" hidden></p>
     <button id="view-toggle" class="view-toggle" type="button" aria-label="Grid view" aria-pressed="false" aria-controls="pile"><span data-view="stacked" class="selected" title="Stack"><img src="icons/layers.svg" width="16" height="16" alt=""></span><span data-view="grid" title="Grid"><img src="icons/grid.svg" width="16" height="16" alt=""></span></button>

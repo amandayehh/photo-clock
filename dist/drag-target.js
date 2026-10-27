@@ -1,14 +1,14 @@
 export function createLinkDropTarget(element,openLink){
-  function contains({x,y}){
+  function contains({x,y},approach=0){
     const bounds=element.getBoundingClientRect();
-    return x>=bounds.left&&x<=bounds.right&&y>=bounds.top&&y<=bounds.bottom;
+    return x>=bounds.left-approach&&x<=bounds.right&&y>=bounds.top&&y<=bounds.bottom;
   }
   function hide(){element.classList.remove('visible','over');}
   return {
     hide,
     show(point){
       element.classList.add('visible');
-      element.classList.toggle('over',contains(point));
+      element.classList.toggle('over',contains(point,32));
     },
     release(sourceUrl,gesture){
       hide();
