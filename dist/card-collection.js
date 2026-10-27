@@ -1,4 +1,4 @@
-export const stackCardLimit=8;
+export const stackCardLimit=5;
 
 // Archive photo data only; older stack cards release their DOM and rendering resources.
 export function createCardCollection({mount,unmount}){

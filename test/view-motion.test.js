@@ -110,6 +110,6 @@ test('interrupted view motion captures the current scaled position and restores 
   for(const resolve of resolvers)resolve();
   await Promise.resolve();await Promise.resolve();
   assert.equal(body.children.length,0);
-  assert.equal(live.size,8);
-  assert.deepEqual(retained.map(entry=>entry.sequence),[4,5,6,7,8,9,10,11]);
+  assert.equal(live.size,5);
+  assert.deepEqual(retained.map(entry=>entry.sequence),[7,8,9,10,11]);
 });

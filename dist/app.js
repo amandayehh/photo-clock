@@ -40,7 +40,7 @@ function disposeCard(entry){
 function syncCards(entries){
   cards=entries;
   const pile=$('pile');
-  // Restored Grid cards must precede the eight cards retained from the stack.
+  // Restored Grid cards must precede the five cards retained from the stack.
   cards.forEach((entry,index)=>{if(pile.children[index]!==entry.slot)pile.insertBefore(entry.slot,pile.children[index]||null);});
   updateCardLayers();
 }
