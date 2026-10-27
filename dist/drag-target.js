@@ -5,21 +5,21 @@ export function createLinkDropTarget(element,openLink,{isPortrait=()=>false}={})
     return x>=left&&x<=bounds.right&&y>=top&&y<=bounds.bottom;
   }
   function hide(){element.classList.remove('visible','over');}
-  function cardApproaches(card){
+  function cardOverlaps(card,approach=0){
     if(!card)return false;
     const bounds=element.getBoundingClientRect();
-    const left=bounds.left-(isPortrait()?0:32),top=bounds.top-(isPortrait()?32:0);
-    return card.right>=left&&card.left<=bounds.right&&card.bottom>=top&&card.top<=bounds.bottom;
+    const left=bounds.left-(isPortrait()?0:approach),top=bounds.top-(isPortrait()?approach:0);
+    return card.right>left&&card.left<bounds.right&&card.bottom>top&&card.top<bounds.bottom;
   }
   return {
     hide,
     show(point,cardBounds){
       element.classList.add('visible');
-      element.classList.toggle('over',contains(point,32)||cardApproaches(cardBounds));
+      element.classList.toggle('over',contains(point,32)||cardOverlaps(cardBounds,32));
     },
-    release(sourceUrl,gesture){
+    release(sourceUrl,gesture,cardBounds){
       hide();
-      if(!gesture.dragging||gesture.cancelled||!contains(gesture))return;
+      if(!gesture.dragging||gesture.cancelled||!(contains(gesture)||cardOverlaps(cardBounds)))return;
       // Open only the photograph's Commons page, directly inside the pointer-up gesture.
       try{
         const url=new URL(sourceUrl);

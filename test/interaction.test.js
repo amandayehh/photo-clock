@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {bindCardInteraction,releaseHeldCard} from '../dist/interaction.js';
+import {createLinkDropTarget} from '../dist/drag-target.js';
 
 class Card extends EventTarget{
   captured=new Set();
@@ -123,4 +124,30 @@ test('cancelled drags report cancellation and allow the card to return without a
     assert.ok(releases[0].cancelled);
     assert.deepEqual([state.x,state.y,state.held],[0,0,false]);
   }
+});
+
+test('a long touch drag opens the source synchronously on release over the portrait strip',t=>{
+  t.mock.timers.enable({apis:['setTimeout']});
+  const source='https://commons.wikimedia.org/wiki/File:Midtown.jpg',opened=[];
+  const target=createLinkDropTarget({
+    classList:{add(){},remove(){},toggle(){}},
+    getBoundingClientRect:()=>({left:0,right:400,top:700,bottom:800})
+  },url=>opened.push(url),{isPortrait:()=>true});
+  const bounds=()=>({left:50,right:350,top:50+state.y,bottom:350+state.y});
+  const {card,state}=setup({
+    onDrag:point=>target.show(point,bounds()),
+    onRelease:gesture=>target.release(source,gesture,bounds())
+  });
+  card.send('pointerdown',{...down,pointerType:'touch'});
+  t.mock.timers.tick(300);
+  assert.equal(state.held,true);
+  card.send('pointermove',{pointerId:1,pointerType:'touch',clientX:100,clientY:500});
+  t.mock.timers.tick(6000);
+  assert.deepEqual(opened,[]);
+  // Finger stays above the strip, while the bottom of the card overlaps it.
+  card.send('pointerup',{pointerId:1,pointerType:'touch',clientX:100,clientY:500});
+  assert.deepEqual(opened,[source]);
+  assert.equal(state.held,false);
+  card.send('lostpointercapture',{pointerId:1});
+  assert.equal(opened.length,1);
 });

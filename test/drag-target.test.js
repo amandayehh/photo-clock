@@ -61,3 +61,26 @@ test('outside drops, clicks, cancellations and invalid source links never open a
     assert.equal(opened.length,0);assert.equal(classes.size,0);
   }
 });
+
+test('dropping the card over the strip opens its link even when the finger is outside',()=>{
+  for(const portrait of [false,true]){
+    const {target,opened}=setup(portrait);
+    const point=portrait?{x:200,y:600}:{x:800,y:300};
+    const bounds=portrait?{left:100,right:300,top:500,bottom:740}:{left:700,right:940,top:200,bottom:400};
+    target.show(point,bounds);
+    target.release(source,{...point,dragging:true,cancelled:false},bounds);
+    assert.deepEqual(opened,[source]);
+  }
+});
+
+test('approach-only overlap, cancelled drags and stationary holds do not open links',()=>{
+  const point={x:200,y:600};
+  const near={left:100,right:300,top:500,bottom:690};
+  const inside={...near,bottom:740};
+  for(const [bounds,overrides] of [[near,{}],[inside,{cancelled:true}],[inside,{dragging:false}]]){
+    const {target,opened}=setup(true);
+    target.show(point,bounds);
+    target.release(source,{...point,dragging:true,cancelled:false,...overrides},bounds);
+    assert.deepEqual(opened,[]);
+  }
+});
