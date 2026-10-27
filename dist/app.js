@@ -8,7 +8,7 @@ import {bindCardInteraction,releaseHeldCard} from './interaction.js';
 import {createLinkDropTarget} from './drag-target.js';
 import {gridColumns,gridLayout,gridImageDimensions,cardTransform} from './grid.js';
 import {captureCards,createViewMotion,viewTiming} from './view-motion.js';
-import {unseenCandidates,createSessionHistory} from './daily-selection.js';
+import {unseenCandidates,createSessionHistory,photoMoment} from './daily-selection.js';
 import {nyTime,displayTime,displayCaptureDate,displayLocation,photoMetadataRows,buildIndex,createCandidateSelector} from './core.js';
 import {cleanTitle,stackLayout,stackImageDimensions,landingPose,entranceFrames,entranceTiming} from './stack.js';
 const $=id=>document.getElementById(id);
@@ -24,6 +24,7 @@ const viewMotion=createViewMotion();
 const linkDropTarget=createLinkDropTarget($('link-drop-target'),url=>window.open(url,'_blank','noopener,noreferrer'));
 let index=new Map(),photos=[],cards=[],current=null,activeKey='',busy=false,generation=0,retryAt=0,lastClock='';
 let gridMode=false;
+let latestPhotoMoment=null;
 const failed=new Set();
 let chooseCandidates=createCandidateSelector();
 const shownThisSession=createSessionHistory();
@@ -51,7 +52,7 @@ function resetCards(){
   releaseHeldCard();viewMotion.finish();linkDropTarget.hide();
   cardExits.finish();
   cardCollection.clear();
-  cards=[];current=null;
+  cards=[];current=null;latestPhotoMoment=null;
   $('pile').scrollTop=0;
   document.body.classList.remove('card-pressed');
   if($('credits').open)$('credits').close();
@@ -214,7 +215,7 @@ async function refresh(force=false){
   const token=++generation;busy=true;let attempts=0,eligible=0;
   const seen=shownThisSession.read();
   if(current)seen.add(String(current.pageid));
-  for(const photo of unseenCandidates(index,state,seen,chooseCandidates)){
+  for(const photo of unseenCandidates(index,state,seen,chooseCandidates,latestPhotoMoment)){
     if(token!==generation)return;
     eligible++;
     if(failed.has(photo.pageid))continue;
@@ -225,6 +226,7 @@ async function refresh(force=false){
       const latest=nyTime();
       if(`${latest.date}|${latest.minute}`!==key){busy=false;activeKey='';refresh();return;}
       printPhoto(photo,img);
+      latestPhotoMoment=photoMoment(photo,state);
       shownThisSession.mark(photo.pageid);
       displayedKey=key;busy=false;retryAt=0;return;
     }catch{if(token!==generation)return;failed.add(photo.pageid);}

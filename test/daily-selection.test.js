@@ -1,11 +1,38 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {unseenCandidates,createSessionHistory} from '../dist/daily-selection.js';
+import {unseenCandidates,createSessionHistory,photoMoment} from '../dist/daily-selection.js';
 import {buildIndex,createCandidateSelector,nyTime} from '../dist/core.js';
 const photo=(pageid,minute)=>({pageid,minute});
 const state={date:'2026-10-24',minute:16*60+17};
 const choose=photos=>photos;
+
+test('displayed times never move backward when an unused bucket is exhausted',()=>{
+  const index=buildIndex([photo(1,976),photo(2,976),photo(3,975),photo(4,978)]);
+  const seen=new Set(['1']),floor=photoMoment(photo(1,976),state);
+  assert.deepEqual([...unseenCandidates(index,state,seen,choose,floor)].map(p=>p.pageid),[2]);
+  seen.add('2');
+  // Hold the current photo instead of falling back to 16:15 or yesterday.
+  assert.equal(unseenCandidates(index,state,seen,choose,floor).next().done,true);
+  assert.equal(unseenCandidates(index,{...state,minute:978},seen,choose,floor).next().value.pageid,4);
+});
+
+test('a late-night initial fallback can advance into today without going farther backward',()=>{
+  const now={date:'2026-01-01',minute:1};
+  const floor=photoMoment(photo(1,1439),now);
+  assert.deepEqual(floor,{date:'2025-12-31',minute:1439});
+  const index=buildIndex([photo(1,1439),photo(2,1438),photo(3,2)]);
+  const seen=new Set(['1']);
+  assert.equal(unseenCandidates(index,now,seen,choose,floor).next().done,true);
+  assert.equal(unseenCandidates(index,{...now,minute:2},seen,choose,floor).next().value.pageid,3);
+});
+
+test('load retries and a backward clock change cannot choose earlier capture times',()=>{
+  const floor={date:state.date,minute:976};
+  const index=buildIndex([photo(1,978),photo(2,976),photo(3,975)]);
+  assert.deepEqual([...unseenCandidates(index,{...state,minute:978},new Set(),choose,floor)].map(p=>p.pageid),[1,2]);
+  assert.equal(unseenCandidates(index,{...state,minute:950},new Set(),choose,floor).next().done,true);
+});
 
 test('missing minutes use the closest earlier unused photo, exhausting each bucket first',()=>{
   const index=buildIndex([photo(1,976),photo(2,976),photo(3,975),photo(4,970)]);
