@@ -63,6 +63,7 @@ body.card-pressed,body.card-pressed *{cursor:grabbing!important}
 /* Shared height keeps the square help button aligned with the view toggle. */
 :root{--photo-radius:clamp(5.6px,1.470588vmin,16px);--photo-shadow:drop-shadow(0 4px 15px rgb(0 0 0 / .4));--toolbar-height:calc(13px * 1.2 + 20px);--page-padding:max(20px,env(safe-area-inset-top),env(safe-area-inset-right),env(safe-area-inset-bottom),env(safe-area-inset-left));--toolbar-top:var(--page-padding);--clock-size:clamp(20px,3.68vmin,40px);--clock-height:calc(var(--clock-size) * 1.2);--stage-top:calc(var(--page-padding) * 2 + var(--toolbar-height));--stage-bottom:calc(var(--page-padding) * 2 + var(--clock-height))}
 .view-toggle{top:var(--toolbar-top);height:var(--toolbar-height)}
+.toolbar-title{position:fixed;top:var(--toolbar-top);left:50%;transform:translateX(-50%);z-index:3;margin:0;height:var(--toolbar-height);max-width:calc(100vw - var(--page-padding) * 2 - var(--toolbar-height) * 4);font-size:13px;font-weight:400;line-height:var(--toolbar-height);letter-spacing:.01em;color:#999;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .about-control{position:fixed;top:var(--toolbar-top);right:var(--page-padding);z-index:4}
 .about-toggle{display:grid;place-items:center;width:var(--toolbar-height);height:var(--toolbar-height);padding:0;border:0;border-radius:8px;background:transparent;color:#fff;transition:background 150ms ease}
 .about-toggle img,.view-toggle img{display:block;filter:brightness(0) invert(.6);pointer-events:none}
