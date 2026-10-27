@@ -35,8 +35,8 @@ body.card-pressed,body.card-pressed *{cursor:grabbing!important}
 body:has(.link-drop-target.visible) .about-control{visibility:hidden}
 @media(orientation:portrait){
   .link-drop-target{inset:auto 0 0;width:auto;height:clamp(96px,14vh,280px)}
-  .link-drop-content{top:var(--page-padding);bottom:auto;left:var(--page-padding);flex-direction:row-reverse;align-items:flex-start;justify-content:space-between}
-  .link-drop-content span{writing-mode:horizontal-tb}
+  .link-drop-content{top:var(--page-padding);bottom:auto;left:var(--page-padding);flex-direction:row-reverse;align-items:flex-start;justify-content:flex-start}
+  .link-drop-content span{writing-mode:horizontal-tb;text-align:right}
   body:has(.link-drop-target.visible) .clock{visibility:hidden}
   body:has(.link-drop-target.visible) .about-control{visibility:visible}
 }
