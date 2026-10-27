@@ -12,20 +12,35 @@ function setup({height=300,viewport=100,reduced=false}={}){
   });
   return {content,controller,edges:()=>edges,pending:()=>callback!==null,step:time=>{const fn=callback;callback=null;fn?.(time);}};
 }
-test('overflow waits for reading then repeatedly reverses at the bottom and top',()=>{
+test('initial marquee is unchanged and each reversal pauses for one second',()=>{
   const h=setup();h.controller.setActive(true);h.step(0);h.step(1300);
   assert.equal(h.content.scrollTop,0);
-  for(let now=1400;now<=3800;now+=100)h.step(now);
+  h.step(1400);assert.equal(h.content.scrollTop,8);
+  for(let now=1500;now<=3800;now+=100)h.step(now);
   assert.equal(h.content.scrollTop,200);assert.equal(h.pending(),true);
   assert.deepEqual(h.edges(),{top:true,bottom:false});
-  h.step(3900);assert.equal(h.content.scrollTop,192);
+  for(let now=3900;now<=4800;now+=100){
+    h.step(now);assert.equal(h.content.scrollTop,200);
+  }
+  h.step(4900);assert.equal(h.content.scrollTop,192);
   assert.deepEqual(h.edges(),{top:true,bottom:true});
-  for(let now=4000;now<=6300;now+=100)h.step(now);
+  for(let now=5000;now<=7300;now+=100)h.step(now);
   assert.equal(h.content.scrollTop,0);assert.equal(h.pending(),true);
   assert.deepEqual(h.edges(),{top:false,bottom:true});
-  h.step(6400);assert.equal(h.content.scrollTop,8);
-  for(let now=6500;now<=8800;now+=100)h.step(now);
-  assert.equal(h.content.scrollTop,200);assert.equal(h.pending(),true);
+  for(let now=7400;now<=8300;now+=100){
+    h.step(now);assert.equal(h.content.scrollTop,0);
+  }
+  h.step(8400);assert.equal(h.content.scrollTop,8);
+});
+test('releasing during an endpoint pause resets it for the next flip',()=>{
+  const h=setup();h.controller.setActive(true);
+  for(let now=0;now<=3800;now+=100)h.step(now);
+  assert.equal(h.content.scrollTop,200);
+  h.controller.setActive(false);
+  assert.equal(h.content.scrollTop,0);assert.equal(h.pending(),false);
+  h.controller.setActive(true);h.step(4000);h.step(5300);
+  assert.equal(h.content.scrollTop,0);
+  h.step(5400);assert.equal(h.content.scrollTop,8);
 });
 test('fades indicate only clipped edges during manual scrolling, resizing and repeat flips',()=>{
   const h=setup({reduced:true});
